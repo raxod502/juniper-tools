@@ -9,7 +9,7 @@ repository).
 
 Install [Vagrant](https://www.vagrantup.com/):
 
-    $ sudo apt-get install vagrant
+    $ wget -c https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.deb; sudo dpkg -i vagrant_2.2.4_x86_64.deb
     $ sudo pacman -S vagrant
 
 Install Vagrant plugins:
