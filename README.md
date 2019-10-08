@@ -1,12 +1,13 @@
 # Juniper Networks '19-20 tools and scripts
 
 This repository has all of our code that isn't intended for inclusion
-into the Linux kernel (for that, see
-<https://github.com/raxod502/juniper-linux>).
+into the Linux kernel (for that, see the
+[juniper-linux](https://github.com/raxod502/juniper-linux)
+repository).
 
 ## Setup
 
-Install [Vagrant]:
+Install [Vagrant](https://www.vagrantup.com/):
 
     $ sudo apt-get install vagrant
     $ sudo pacman -S vagrant
