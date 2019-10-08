@@ -8,6 +8,8 @@ help: ## Display this message
 configure: ## Configure kernel from VM distro
 	cat "/boot/config-$$(uname -r)" > /linux/.config
 	lmake olddefconfig
+	sed 's/CONFIG_BUILD_SALT=""/CONFIG_BUILD_SALT="JUNIPER"/' < /linux/.config > /tmp/.config
+	mv /tmp/.config /linux/.config
 
 kernel: ## Compile kernel (for use inside VM)
 	make -C /linux "-j$$(nproc)"
