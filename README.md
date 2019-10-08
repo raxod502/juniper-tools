@@ -34,6 +34,9 @@ use `jmake`. As a shorthand for running a `make` command inside
 `/linux`, you can use `lmake`. This works because the `bin`
 subdirectory of this repository is added to `$PATH` within the VM.
 
+The machine is available locally at the virtual IP address
+`192.168.33.10`.
+
 ### Make targets
 
 Run `make help` for information on what you can do.
