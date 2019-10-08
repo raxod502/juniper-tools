@@ -20,8 +20,16 @@ Provision and start VM. It takes about 3.5 minutes on my machine:
 
     $ vagrant up
 
+I received an error about a Guest Addition version mismatch. See [here](https://blog.patelify.com/posts/virtualbox-vagrant-the-version-mismatch-continues/) for a solution. To find the VM UUID, run 
+    
+    $ vboxmanage list vms
+
+To restart a VM that is already running:
+
+    $ vagrant reload [name|id]
+
 Starting the VM after it's already provisioned the first time will be
-much faster.
+much faster. Default password is "vagrant".
 
 ## Development
 
