@@ -9,11 +9,15 @@ $(error linux source repository not available)
 endif
 
 ifneq (,$(wildcard /vagrant))
+	CONTEXT := VM
+	OTHER_CONTEXT := host
 	VM := true
 	REQUIRE_VM :=
 	HOST :=
 	REQUIRE_HOST := echo "this command may only be run from the host" >&2; exit 1
 else
+	CONTEXT := host
+	OTHER_CONTEXT := VM
 	HOST := true
 	REQUIRE_HOST :=
 	VM :=
@@ -21,8 +25,16 @@ else
 endif
 
 help: ## Display this message
-	@echo "usage:" >&2
+	@echo "usage (from the $(CONTEXT)):" >&2
 	@grep -h "[#]# " $(MAKEFILE_LIST)	| \
+		grep -v $(OTHER_CONTEXT)-only	| \
+		sed 's/^/  make /'		| \
+		sed 's/:[^#]*[#]# /|/'		| \
+		column -t -s'|' >&2
+	@echo >&2
+	@echo "these commands are not available from the $(CONTEXT):" >&2
+	@grep -h "[#]# " $(MAKEFILE_LIST)	| \
+		grep $(OTHER_CONTEXT)-only	| \
 		sed 's/^/  make /'		| \
 		sed 's/:[^#]*[#]# /|/'		| \
 		column -t -s'|' >&2
