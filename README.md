@@ -14,14 +14,16 @@ Install [Vagrant](https://www.vagrantup.com/):
 
 Install Vagrant plugins:
 
-    $ vagrant plugin install vagrant-vbguest vagrant-reload
+    $ vagrant plugin install vagrant-disksize vagrant-reload vagrant-vbguest
 
 Provision and start VM. It takes about 3.5 minutes on my machine:
 
     $ vagrant up
 
-I received an error about a Guest Addition version mismatch. See [here](https://blog.patelify.com/posts/virtualbox-vagrant-the-version-mismatch-continues/) for a solution. To find the VM UUID, run 
-    
+I received an error about a Guest Addition version mismatch. See
+[here](https://blog.patelify.com/posts/virtualbox-vagrant-the-version-mismatch-continues/)
+for a solution. To find the VM UUID, run
+
     $ vboxmanage list vms
 
 To restart a VM that is already running:

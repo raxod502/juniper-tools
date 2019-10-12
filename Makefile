@@ -39,7 +39,11 @@ help: ## Display this message
 		sed 's/:[^#]*[#]# /|/'		| \
 		column -t -s'|' >&2
 
-ssh: ## Bring up VM and SSH into it (host-only)
+destroy: ## Destroy VM and associated filesystem (host-only)
+	@$(REQUIRE_HOST)
+	vagrant destroy -f
+
+vm: ## Bring up VM and SSH into it (host-only)
 	@$(REQUIRE_HOST)
 	vagrant up
 	vagrant ssh
@@ -58,3 +62,12 @@ kernel: ## Compile kernel (host-only)
 	@$(REQUIRE_HOST)
 	make -C $(LINUX) olddefconfig
 	time make -C $(LINUX) "-j$$(nproc)"
+
+install: ## Install kernel (VM-only)
+	@$(REQUIRE_VM)
+	sudo make -C $(LINUX) modules_install install
+
+reboot: ## Reboot VM (host-only)
+	@$(REQUIRE_HOST)
+	vagrant reload
+	vagrant ssh
