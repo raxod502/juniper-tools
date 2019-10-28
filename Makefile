@@ -65,7 +65,7 @@ kernel: ## Compile kernel (host-only)
 
 install: ## Install kernel (VM-only)
 	@$(REQUIRE_VM)
-	sudo make -C $(LINUX) modules_install install
+	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install
 
 reboot: ## Reboot VM (host-only)
 	@$(REQUIRE_HOST)
