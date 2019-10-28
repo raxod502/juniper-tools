@@ -7,6 +7,18 @@ cd /tmp
 
 packages="
 
+# https://www.linux.com/tutorials/how-compile-linux-kernel-0/
+bc
+bison
+build-essential
+fakeroot
+flex
+git
+libelf-dev
+libssl-dev
+ncurses-dev
+xz-utils
+
 # Fix VirtualBox clock skew, see:
 # https://stackoverflow.com/a/21365600/3538165
 ntp
