@@ -7,6 +7,16 @@ repository).
 
 ## Setup
 
+Fetch
+[development](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/)
+or
+[stable](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/)
+version of the Linux source repository and put it in a directory named
+either `juniper-linux` or just `linux` next to the `juniper-tools`
+repository. Check out the appropriate tag. I think the best one to use
+would be v5.2.21 from the stable repository, as there are reports of
+the 5.3 series being incompatible with VirtualBox Guest Additions.
+
 Install [Vagrant](https://www.vagrantup.com/):
 
     $ wget -c https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.deb; sudo dpkg -i vagrant_2.2.4_x86_64.deb
