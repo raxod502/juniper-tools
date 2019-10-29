@@ -58,6 +58,10 @@ configure: ## Configure kernel (VM-only)
 	sed 's/CONFIG_LOCALVERSION=""/CONFIG_LOCALVERSION="-JUNIPER"/' < $(LINUX)/.config > /tmp/.config
 	mv /tmp/.config $(LINUX)/.config
 
+tinyconfig: ## Configure kernel minimally (host-only)
+	@$(REQUIRE_HOST)
+	scripts/configure.bash $(LINUX)
+
 kernel: ## Compile kernel (host-only)
 	@$(REQUIRE_HOST)
 	make -C $(LINUX) olddefconfig
