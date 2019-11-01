@@ -55,8 +55,7 @@ configure: ## Configure kernel (VM-only)
 	@$(REQUIRE_VM)
 	cat "/boot/config-$$(uname -r)" > $(LINUX)/.config
 	make -C $(LINUX) olddefconfig
-	sed 's/CONFIG_LOCALVERSION=""/CONFIG_LOCALVERSION="JUNIPER"/' < $(LINUX)/.config > /tmp/.config
-	mv /tmp/.config $(LINUX)/.config
+	sed -i "s/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION=\"-$(date +%c)\"/" $(LINUX)/.config
 
 kernel: ## Compile kernel (host-only)
 	@$(REQUIRE_HOST)
