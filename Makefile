@@ -55,7 +55,12 @@ configure: ## Configure kernel (VM-only)
 	@$(REQUIRE_VM)
 	cat "/boot/config-$$(uname -r)" > $(LINUX)/.config
 	make -C $(LINUX) olddefconfig
-	sed -i "s/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION=\"-$(date +%c)\"/" $(LINUX)/.config
+	sed 's/CONFIG_LOCALVERSION=""/CONFIG_LOCALVERSION="-JUNIPER"/' < $(LINUX)/.config > /tmp/.config
+	mv /tmp/.config $(LINUX)/.config
+
+tinyconfig: ## Configure kernel minimally (host-only)
+	@$(REQUIRE_HOST)
+	scripts/configure.bash $(LINUX)
 
 kernel: ## Compile kernel (host-only)
 	@$(REQUIRE_HOST)
@@ -64,7 +69,7 @@ kernel: ## Compile kernel (host-only)
 
 install: ## Install kernel (VM-only)
 	@$(REQUIRE_VM)
-	sudo make -C $(LINUX) modules_install install
+	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install
 
 reboot: ## Reboot VM (host-only)
 	@$(REQUIRE_HOST)
