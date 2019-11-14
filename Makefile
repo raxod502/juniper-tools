@@ -55,6 +55,7 @@ configure: ## Configure kernel (VM-only)
 	@$(REQUIRE_VM)
 	cat "/boot/config-$$(uname -r)" > $(LINUX)/.config
 	make -C $(LINUX) olddefconfig
+	yes "" | make -C $(LINUX) localmodconfig
 	sed -i 's/CONFIG_LOCALVERSION=""/CONFIG_LOCALVERSION="-JUNIPER"/' $(LINUX)/.config
 
 kernel: ## Compile kernel (host-only)
