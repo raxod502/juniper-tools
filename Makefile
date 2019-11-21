@@ -46,7 +46,6 @@ destroy: ## Destroy VM and associated filesystem (host-only)
 vm: ## Bring up VM and SSH into it (host-only)
 	@$(REQUIRE_HOST)
 	vagrant up
-	vagrant ssh
 
 clean: ## Remove all Linux build artifacts, including config
 	git -C $(LINUX) clean -ffdX
@@ -68,9 +67,8 @@ kernel: ## Compile kernel (host-only)
 
 install: ## Install kernel (VM-only)
 	@$(REQUIRE_VM)
-	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install
+	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install -j 4
 
 reboot: ## Reboot VM (host-only)
 	@$(REQUIRE_HOST)
 	vagrant reload
-	vagrant ssh
