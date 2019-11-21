@@ -54,11 +54,8 @@ configure: ## Configure kernel (VM-only)
 	@$(REQUIRE_VM)
 	cat "/boot/config-$$(uname -r)" > $(LINUX)/.config
 	make -C $(LINUX) olddefconfig
+	yes "" | make -C $(LINUX) localmodconfig
 	sed -i 's/CONFIG_LOCALVERSION=""/CONFIG_LOCALVERSION="-JUNIPER"/' $(LINUX)/.config
-
-tinyconfig: ## Configure kernel minimally (host-only)
-	@$(REQUIRE_HOST)
-	scripts/configure.bash $(LINUX)
 
 kernel: ## Compile kernel (host-only)
 	@$(REQUIRE_HOST)
