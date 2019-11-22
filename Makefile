@@ -39,11 +39,11 @@ help: ## Display this message
 		sed 's/:[^#]*[#]# /|/'		| \
 		column -t -s'|' >&2
 
-destroy: ## Destroy VM and associated filesystem (host-only)
+destroy: ## Destroy VMs and associated filesystems (host-only)
 	@$(REQUIRE_HOST)
 	vagrant destroy -f
 
-vm: ## Bring up VM and SSH into it (host-only)
+vm: ## Provision and boot VMs (host-only)
 	@$(REQUIRE_HOST)
 	vagrant up
 
@@ -64,7 +64,7 @@ kernel: ## Compile kernel (host-only)
 
 install: ## Install kernel (VM-only)
 	@$(REQUIRE_VM)
-	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install -j $$(nproc)
+	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install -j$$(nproc)
 
 reboot: ## Reboot VM (host-only)
 	@$(REQUIRE_HOST)

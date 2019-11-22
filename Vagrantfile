@@ -6,10 +6,10 @@ Vagrant.configure("2") do |config|
     v.gui = true
   end
 
-  config.vm.define "sender" do |sender|  
+  config.vm.define "sender" do |sender|
     sender.vm.network "private_network", ip: "192.168.33.10"
   end
-  config.vm.define "receiver" do |receiver|  
+  config.vm.define "receiver" do |receiver|
     receiver.vm.network "private_network", ip: "192.168.33.11"
   end
 
