@@ -47,6 +47,10 @@ vm: ## Provision and boot VMs (host-only)
 	@$(REQUIRE_HOST)
 	vagrant up
 
+ssh: ## SSH into VM=sender or VM=receiver (host-only)
+	@$(REQUIRE_HOST)
+	vagrant ssh $${VM:-sender}
+
 clean: ## Remove all Linux build artifacts, including config
 	git -C $(LINUX) clean -ffdX
 
