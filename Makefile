@@ -62,8 +62,18 @@ ssh: ## SSH into one VM (host-only)
 	@$(REQUIRE_HOST)
 	vagrant ssh $(VM)
 
-clean: ## Remove all Linux build artifacts, including config
+clean: ## Remove all Linux build artifacts, except config and CDB
+	git -C $(LINUX) clean -ffdX -e "!/.config" -e "!/compile_commands.json"
+
+cleanall: ## Remove *all* Linux build artifacts, including config and CDB
 	git -C $(LINUX) clean -ffdX
+
+cdb: ## Create compilation database for code intelligence
+	grep -qxF /compile_commands.json $(LINUX)/.git/info/exclude || \
+		echo /compile_commands.json >> $(LINUX)/.git/info/exclude
+	make clean
+	bear make kernel
+	mv compile_commands.json $(LINUX)/
 
 configure: ## Configure kernel (VM-only)
 	@$(REQUIRE_VM)
