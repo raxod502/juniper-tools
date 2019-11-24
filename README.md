@@ -60,4 +60,57 @@ The machine is available locally at the virtual IP address
 
 ### Make targets
 
-Run `make help` for information on what you can do.
+Run `make help` for information on what you can do. Here's the general
+workflow. If you want to clear things out from a previous run
+(although this shouldn't be necessary unless something is messed up),
+run
+
+    $ make clean
+
+to remove the kernel build artifacts from your source repository and
+run
+
+    $ make destroy
+
+to remove the VMs and their filesystems, so everything will be
+re-provisioned next time.
+
+Then, to get started, run
+
+    $ make vm
+
+to provision both the sender and receiver VMs. Once they are booted,
+select one of them and SSH into it by running
+
+    $ make ssh [VM=sender | VM=receiver]
+
+(the default is `sender` if you omit the `VM` argument). At this
+point, it is time to build the kernel. This requires three steps:
+configure, compile, and install. The first step must be done from
+inside a VM because the configuration script needs to look at the
+running VM and determine which modules must be built to support our
+use case. Run:
+
+    $ make configure
+
+Then, from the host machine (otherwise it will be much slower), run:
+
+    $ make kernel
+
+Finally, from within each VM that you want to update, run:
+
+    $ make install
+
+In order to boot from the newly installed kernel, restart the VMs
+using:
+
+    $ make reboot
+
+## Compilation cache
+
+It is recommended that you install [ccache](https://ccache.dev/) and
+add its binary directory to your `$PATH`, so that `gcc` resolves to
+for example `/usr/lib/ccache/bin/gcc`. It is also recommended to
+increase the maximum cache size using
+
+    $ ccache --set-config=max_size=100.0G

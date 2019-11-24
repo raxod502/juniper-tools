@@ -70,6 +70,6 @@ install: ## Install kernel (VM-only)
 	@$(REQUIRE_VM)
 	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install -j$$(nproc)
 
-reboot: ## Reboot VM (host-only)
+reboot: ## Reboot VMs (host-only)
 	@$(REQUIRE_HOST)
 	vagrant reload
