@@ -8,9 +8,11 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "sender", primary: true do |sender|
     sender.vm.network "private_network", ip: "192.168.33.10"
+    sender.vm.hostname = "sender"
   end
   config.vm.define "receiver" do |receiver|
     receiver.vm.network "private_network", ip: "192.168.33.11"
+    receiver.vm.hostname = "receiver"
   end
 
   config.vm.box = "ubuntu/bionic64"
