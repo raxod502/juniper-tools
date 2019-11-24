@@ -39,15 +39,15 @@ help: ## Display this message
 		sed 's/:[^#]*[#]# /|/'		| \
 		column -t -s'|' >&2
 
-destroy: ## Destroy VMs and associated filesystems (host-only)
+destroy: ## Destroy one or both VMs and associated filesystem(s) (host-only)
 	@$(REQUIRE_HOST)
 	vagrant destroy -f
 
-vm: ## Provision and boot VMs (host-only)
+vm: ## Provision and boot one or both VMs (host-only)
 	@$(REQUIRE_HOST)
-	vagrant up
+	vagrant up $(VM)
 
-ssh: ## SSH into VM=sender or VM=receiver (host-only)
+ssh: ## SSH into one VM (host-only)
 	@$(REQUIRE_HOST)
 	vagrant ssh $(VM)
 
@@ -70,6 +70,6 @@ install: ## Install kernel (VM-only)
 	@$(REQUIRE_VM)
 	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install -j$$(nproc)
 
-reboot: ## Reboot VMs (host-only)
+reboot: ## Reboot one or both VMs (host-only)
 	@$(REQUIRE_HOST)
-	vagrant reload
+	vagrant reload $(VM)

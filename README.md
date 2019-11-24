@@ -106,6 +106,10 @@ using:
 
     $ make reboot
 
+Note that the `make vm`, `make reboot`, and `make destroy` commands
+also take an optional `VM=sender` or `VM=receiver` argument to only
+act on a single VM instead of both of them.
+
 ## Compilation cache
 
 It is recommended that you install [ccache](https://ccache.dev/) and
