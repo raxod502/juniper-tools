@@ -24,6 +24,16 @@ else
 	REQUIRE_VM := echo "this command may only be run from the VM" >&2; exit 1
 endif
 
+REQUIRE_SENDER := echo "this command may only be run from the sender VM" >&2; exit 1
+REQUIRE_RECEIVER := echo "this command may only be run from the receiver VM" >&2; exit 1
+
+HOSTNAME := $(shell hostname)
+ifeq ($(HOSTNAME),sender)
+	REQUIRE_SENDER :=
+else ifeq ($(HOSTNAME),receiver)
+	REQUIRE_RECEIVER :=
+endif
+
 help: ## Display this message
 	@echo "usage (from the $(CONTEXT)):" >&2
 	@grep -h "[#]# " $(MAKEFILE_LIST)	| \
@@ -75,3 +85,8 @@ reboot: ## Reboot one or both VMs (host-only)
 	@$(REQUIRE_HOST)
 	vagrant reload $(VM)
 	vagrant ssh $(VM)
+
+packet: ## Send large packet (VM-only, sender-only)
+	@$(REQUIRE_VM)
+	@$(REQUIRE_SENDER)
+	scripts/send_lgpkt.bash 192.168.33.11
