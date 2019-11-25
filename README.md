@@ -22,10 +22,6 @@ Install [Vagrant](https://www.vagrantup.com/):
     $ wget -c https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.deb; sudo dpkg -i vagrant_2.2.4_x86_64.deb
     $ sudo pacman -S vagrant
 
-Install Vagrant plugins:
-
-    $ vagrant plugin install vagrant-disksize vagrant-reload vagrant-vbguest
-
 Provision and start VM. It takes about 3.5 minutes on my machine:
 
     $ vagrant up

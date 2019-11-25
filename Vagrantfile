@@ -1,6 +1,12 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+["vagrant-disksize", "vagrant-reload", "vagrant-vbguest"].each do |plugin|
+  unless Vagrant.has_plugin?(plugin)
+    system("vagrant plugin install #{plugin}")
+  end
+end
+
 Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |v|
     v.gui = true
