@@ -100,3 +100,6 @@ packet: ## Send large packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
 	scripts/send_lgpkt.bash 192.168.33.11
+
+patch: ## Show 'git diff' of all Juniper kernel changes
+	git -C $(LINUX) diff $$(git -C $(LINUX) describe --tags --abbrev=0)..
