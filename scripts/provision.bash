@@ -23,6 +23,9 @@ xz-utils
 # https://stackoverflow.com/a/21365600/3538165
 ntp
 
+# inspect packet traffic, for development&testing
+wireshark
+
 "
 
 export DEBIAN_FRONTEND=noninteractive

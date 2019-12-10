@@ -34,6 +34,8 @@ else ifeq ($(HOSTNAME),receiver)
 	REQUIRE_RECEIVER :=
 endif
 
+SSH_ARGS := -- -X
+
 help: ## Display this message
 	@echo "usage (from the $(CONTEXT)):" >&2
 	@grep -h "[#]# " $(MAKEFILE_LIST)	| \
@@ -56,11 +58,11 @@ destroy: ## Destroy one or both VMs and associated filesystem(s) (host-only)
 vm: ## Provision and boot one or both VMs (host-only)
 	@$(REQUIRE_HOST)
 	vagrant up $(VM)
-	vagrant ssh $(VM)
+	vagrant ssh $(VM) $(SSH_ARGS)
 
 ssh: ## SSH into one VM (host-only)
 	@$(REQUIRE_HOST)
-	vagrant ssh $(VM)
+	vagrant ssh $(VM) $(SSH_ARGS)
 
 clean: ## Remove all Linux build artifacts, except config and CDB
 	git -C $(LINUX) clean -ffdX -e "!/.config" -e "!/compile_commands.json"
@@ -94,7 +96,7 @@ install: ## Install kernel (VM-only)
 reboot: ## Reboot one or both VMs (host-only)
 	@$(REQUIRE_HOST)
 	vagrant reload $(VM)
-	vagrant ssh $(VM)
+	vagrant ssh $(VM) $(SSH_ARGS)
 
 udp: ## Send large udp packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
@@ -110,3 +112,11 @@ icmp: ## Send large icmp packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
 	ping -c 1 -s 6000 192.168.33.11
+	scripts/send_lgpkt.bash 192.168.33.11
+
+wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
+	@$(REQUIRE_VM)
+	sudo wireshark >/dev/null 2>&1 &
+
+patch: ## Show 'git diff' of all Juniper kernel changes
+	git -C $(LINUX) diff $$(git -C $(LINUX) describe --tags --abbrev=0)..
