@@ -96,7 +96,17 @@ reboot: ## Reboot one or both VMs (host-only)
 	vagrant reload $(VM)
 	vagrant ssh $(VM)
 
-packet: ## Send large packet (VM-only, sender-only)
+udp: ## Send large udp packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
-	scripts/send_lgpkt.bash 192.168.33.11
+	scripts/send_lgpkt.bash 192.168.33.11 udp
+
+tcp: ## Send large tcp packet (VM-only, sender-only)
+	@$(REQUIRE_VM)
+	@$(REQUIRE_SENDER)
+	scripts/send_lgpkt.bash 192.168.33.11 tcp
+
+icmp: ## Send large icmp packet (VM-only, sender-only)
+	@$(REQUIRE_VM)
+	@$(REQUIRE_SENDER)
+	ping -c 1 -s 6000 192.168.33.11
