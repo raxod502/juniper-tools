@@ -112,7 +112,6 @@ icmp: ## Send large icmp packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
 	ping -c 1 -s 6000 192.168.33.11
-	scripts/send_lgpkt.bash 192.168.33.11
 
 wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
 	@$(REQUIRE_VM)
