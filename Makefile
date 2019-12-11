@@ -101,18 +101,18 @@ reboot: ## Reboot one or both VMs (host-only)
 udp: ## Send large udp packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
-	scripts/send_lgpkt.bash 192.168.33.11 udp
+	scripts/send_lgpkt.bash 192.168.34.10 udp
 
 tcp: ## Send large tcp packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
-	scripts/send_lgpkt.bash 192.168.33.11 tcp
+	scripts/send_lgpkt.bash 192.168.34.10 tcp
 
 icmp: ## Send large icmp packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
-	ping -c 1 -s 6000 192.168.33.11
-	scripts/send_lgpkt.bash 192.168.33.11
+	ping -c 1 -s 6000 192.168.34.10
+	scripts/send_lgpkt.bash 192.168.34.10
 
 wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
 	@$(REQUIRE_VM)
