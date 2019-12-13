@@ -53,7 +53,7 @@ help: ## Display this message
 
 destroy: ## Destroy one or both VMs and associated filesystem(s) (host-only)
 	@$(REQUIRE_HOST)
-	vagrant destroy -f
+	vagrant destroy -f $(VM) || true
 
 vm: ## Provision and boot one or both VMs (host-only)
 	@$(REQUIRE_HOST)
