@@ -135,3 +135,6 @@ restore: ## Restore VM to original kernel (host-only)
 	@$(REQUIRE_HOST)
 	vagrant snapshot restore sender send_base
 	vagrant snapshot restore receiver recv_base
+
+dirlocals: ## Create .dir-locals.el to configure Emacs for kernel development
+	cp template/.dir-locals.el $(LINUX)/.dir-locals.el
