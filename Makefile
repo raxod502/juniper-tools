@@ -66,7 +66,7 @@ ssh: ## SSH into one VM (host-only)
 	vagrant ssh $(VM) $(SSH_ARGS)
 
 clean: ## Remove all Linux build artifacts, except config and CDB
-	git -C $(LINUX) clean -ffdX -e "!/.config" -e "!/compile_commands.json"
+	git -C $(LINUX) clean -ffdX -e "!/.config" -e "!/.dir-locals.el" -e "!/compile_commands.json"
 
 cleanall: ## Remove *all* Linux build artifacts, including config and CDB
 	git -C $(LINUX) clean -ffdX
