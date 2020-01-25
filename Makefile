@@ -35,6 +35,7 @@ else ifeq ($(HOSTNAME),receiver)
 endif
 
 SSH_ARGS := -- -X
+MTU := 400
 
 help: ## Display this message
 	@echo "usage (from the $(CONTEXT)):" >&2
@@ -103,15 +104,25 @@ udp: ## Send large udp packet (VM-only, sender-only)
 	@$(REQUIRE_SENDER)
 	scripts/send_lgpkt.bash 192.168.33.11 udp
 
-tcp: ## Send large tcp packet (VM-only, sender-only)
-	@$(REQUIRE_VM)
-	@$(REQUIRE_SENDER)
-	scripts/send_lgpkt.bash 192.168.33.11 tcp
-
 icmp: ## Send large icmp packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
 	ping -c 1 -s 6000 192.168.33.11
+
+tcp_sender: ## Sender setup to send fragmented TCP packet
+	@$(REQUIRE_VM)
+	@$(REQUIRE_SENDER)
+	sudo sysctl net/ipv4/ip_no_pmtu_disc=1
+	nc 192.168.33.11 3000
+
+tcp_receiver: ## Receiver setup to send fragmented TCP packet
+	@$(REQUIRE_VM)
+	@$(REQUIRE_RECEIVER)
+	sudo sysctl net/ipv4/ip_no_pmtu_disc=1
+	nc -l 3000
+
+change_mtu: ## Change MTU of the link between the VMs
+	sudo ifconfig enp0s8 mtu $(MTU)
 
 wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
 	@$(REQUIRE_VM)
@@ -119,3 +130,8 @@ wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
 
 patch: ## Show 'git diff' of all Juniper kernel changes
 	git -C $(LINUX) diff $$(git -C $(LINUX) describe --tags --abbrev=0)..
+
+restore: ## Restore VM to original kernel (host-only)
+	@$(REQUIRE_HOST)
+	vagrant snapshot restore sender send_base
+	vagrant snapshot restore receiver recv_base
