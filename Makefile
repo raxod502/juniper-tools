@@ -66,7 +66,7 @@ ssh: ## SSH into one VM (host-only)
 	vagrant ssh $(VM) $(SSH_ARGS)
 
 clean: ## Remove all Linux build artifacts, except config and CDB
-	git -C $(LINUX) clean -ffdX -e "!/.config" -e "!/compile_commands.json"
+	git -C $(LINUX) clean -ffdX -e "!/.config" -e "!/.dir-locals.el" -e "!/compile_commands.json"
 
 cleanall: ## Remove *all* Linux build artifacts, including config and CDB
 	git -C $(LINUX) clean -ffdX
@@ -141,3 +141,6 @@ restore: ## Restore VM to original kernel (host-only)
 	@$(REQUIRE_HOST)
 	vagrant snapshot restore sender send_base
 	vagrant snapshot restore receiver recv_base
+
+dirlocals: ## Create .dir-locals.el to configure Emacs for kernel development
+	cp template/.dir-locals.el $(LINUX)/.dir-locals.el
