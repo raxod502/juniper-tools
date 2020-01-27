@@ -124,6 +124,12 @@ tcp_receiver: ## Receiver setup to send fragmented TCP packet
 change_mtu: ## Change MTU of the link between the VMs
 	sudo ifconfig enp0s8 mtu $(MTU)
 
+check_cache: ## Check the pmtu cache in the sender VM
+	ip route get to 192.168.33.11
+
+clear_cache: ## Clear the pmtu cache in the sender VM
+	ip route flush cache to 192.168.33.11
+
 wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
 	@$(REQUIRE_VM)
 	sudo wireshark >/dev/null 2>&1 &
