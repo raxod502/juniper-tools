@@ -25,6 +25,7 @@ ntp
 
 # inspect packet traffic, for development&testing
 wireshark
+tshark
 
 "
 

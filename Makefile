@@ -99,21 +99,26 @@ reboot: ## Reboot one or both VMs (host-only)
 	vagrant reload $(VM)
 	vagrant ssh $(VM) $(SSH_ARGS)
 
+udp_listen: ## Listen for incoming UDP packet on the receiver VM
+	@$(REQUIRE_VM)
+	@$(REQUIRE_RECEIVER)
+	nc -ul 3000
+
 udp: ## Send large udp packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
-	scripts/send_lgpkt.bash 192.168.33.11 udp
+	scripts/send_lgpkt.bash 192.168.66.11 udp
 
 icmp: ## Send large icmp packet (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
-	ping -c 1 -s 6000 192.168.33.11
+	ping -c 1 -s 6000 192.168.66.11
 
 tcp_sender: ## Sender setup to send fragmented TCP packet
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
 	sudo sysctl net/ipv4/ip_no_pmtu_disc=1
-	nc 192.168.33.11 3000
+	nc 192.168.66.11 3000
 
 tcp_receiver: ## Receiver setup to send fragmented TCP packet
 	@$(REQUIRE_VM)
@@ -122,13 +127,23 @@ tcp_receiver: ## Receiver setup to send fragmented TCP packet
 	nc -l 3000
 
 change_mtu: ## Change MTU of the link between the VMs
-	sudo ifconfig enp0s8 mtu $(MTU)
+	sudo ip link set mtu $(MTU) dev enp0s8
+
+r1_change_mtu: ## Change MTU of the link between the router VMs
+	sudo ip link set mtu $(MTU) dev enp0s9
+	sleep 3
+	sudo route add -host 192.168.66.11 gw 192.168.50.200 dev enp0s9
+
+r2_change_mtu: ## Change MTU of the link between the router VMs
+	sudo ip link set mtu $(MTU) dev enp0s9
+	sleep 3
+	sudo route add -host 192.168.33.10 gw 192.168.50.101 dev enp0s9
 
 check_cache: ## Check the pmtu cache in the sender VM
-	ip route get to 192.168.33.11
+	ip route get to 192.168.66.11
 
 clear_cache: ## Clear the pmtu cache in the sender VM
-	ip route flush cache to 192.168.33.11
+	sudo ip route flush cache to 192.168.66.11
 
 wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
 	@$(REQUIRE_VM)
