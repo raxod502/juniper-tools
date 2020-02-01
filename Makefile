@@ -26,16 +26,23 @@ endif
 
 REQUIRE_SENDER := echo "this command may only be run from the sender VM" >&2; exit 1
 REQUIRE_RECEIVER := echo "this command may only be run from the receiver VM" >&2; exit 1
+REQUIRE_ROUTER1 := echo "this command may only be run from the router1 VM" >&2; exit 1
+REQUIRE_ROUTER2 := echo "this command may only be run from the router2 VM" >&2; exit 1
+
 
 HOSTNAME := $(shell hostname)
 ifeq ($(HOSTNAME),sender)
 	REQUIRE_SENDER :=
 else ifeq ($(HOSTNAME),receiver)
 	REQUIRE_RECEIVER :=
+else ifeq ($(HOSTNAME),router1)
+	REQUIRE_ROUTER1 :=
+else ifeq ($(HOSTNAME),router2)
+	REQUIRE_ROUTER2 :=
 endif
 
 SSH_ARGS := -- -X
-MTU := 400
+MTU := 800
 
 help: ## Display this message
 	@echo "usage (from the $(CONTEXT)):" >&2
@@ -127,27 +134,40 @@ tcp_receiver: ## Receiver setup to send fragmented TCP packet
 	nc -l 3000
 
 change_mtu: ## Change MTU of the link between the VMs
+	@$(REQUIRE_VM)
 	sudo ip link set mtu $(MTU) dev enp0s8
 
 r1_change_mtu: ## Change MTU of the link between the router VMs
+	@$(REQUIRE_VM)
+	@$(REQUIRE_ROUTER1)
 	sudo ip link set mtu $(MTU) dev enp0s9
 	sleep 3
-	sudo route add -host 192.168.66.11 gw 192.168.50.200 dev enp0s9
+	sudo route add -net 192.168.66.0/24 gw 192.168.50.200 dev enp0s9
 
 r2_change_mtu: ## Change MTU of the link between the router VMs
+	@$(REQUIRE_VM)
+	@$(REQUIRE_ROUTER2)
 	sudo ip link set mtu $(MTU) dev enp0s9
 	sleep 3
-	sudo route add -host 192.168.33.10 gw 192.168.50.101 dev enp0s9
+	sudo route add -net 192.168.33.0/24 gw 192.168.50.101 dev enp0s9
 
 check_cache: ## Check the pmtu cache in the sender VM
+	@$(REQUIRE_VM)
 	ip route get to 192.168.66.11
 
 clear_cache: ## Clear the pmtu cache in the sender VM
+	@$(REQUIRE_VM)
 	sudo ip route flush cache to 192.168.66.11
 
 wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
 	@$(REQUIRE_VM)
 	sudo wireshark >/dev/null 2>&1 &
+
+tshark: ## Lauch TShark to inspect VM network traffic (VM-only)
+	@$(REQUIRE_VM)
+	sudo tshark -i enp0s9 -f "host 192.168.33.10 and (icmp or tcp or udp)" \
+		-T fields -e frame.number  -e _ws.col.Source -e _ws.col.Destination \
+		-e _ws.col.Protocol -e icmp.type -E header=y -e data.len -e _ws.col.Info
 
 patch: ## Show 'git diff' of all Juniper kernel changes
 	git -C $(LINUX) diff $$(git -C $(LINUX) describe --tags --abbrev=0)..
@@ -156,6 +176,8 @@ restore: ## Restore VM to original kernel (host-only)
 	@$(REQUIRE_HOST)
 	vagrant snapshot restore sender send_base
 	vagrant snapshot restore receiver recv_base
+	vagrant snapshot restore router1 r1_base
+	vagrant snapshot restore router2 r2_base
 
 dirlocals: ## Create .dir-locals.el to configure Emacs for kernel development
 	cp template/.dir-locals.el $(LINUX)/.dir-locals.el
