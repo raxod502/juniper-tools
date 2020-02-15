@@ -1,8 +1,8 @@
 ifneq (,$(wildcard /linux))
 	LINUX := /linux
-else ifneq (,$(wildcard ../juniper-linux))
+else ifneq (,$(wildcard ../../juniper-linux))
 	LINUX := ../juniper-linux
-else ifneq (,$(wildcard ../linux))
+else ifneq (,$(wildcard ../../linux))
 	LINUX := ../linux
 else
 $(error linux source repository not available)
