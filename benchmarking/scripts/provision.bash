@@ -25,7 +25,7 @@ ntp
 
 # inspect packet traffic, for development&testing
 wireshark
-python-scapy
+python3-scapy
 "
 
 export DEBIAN_FRONTEND=noninteractive
