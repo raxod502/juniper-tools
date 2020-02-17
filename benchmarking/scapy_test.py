@@ -57,7 +57,7 @@ if __name__ == "__main__":
     parser.add_argument("type", choices=["rh0", "crh16", "crh32"])
     parser.add_argument("-d", "--dstip", type=str, default="2001:4860:4860::8888",  help="Destination IPv6 address")
     parser.add_argument("-n", "--numDevices", type=int, default="5", help="The number of IP addresses in the routing extension header")
-    parser.add_argument("-t", "--numTimes", type=int, default="1", help="The number of times to send the packet.")
+    parser.add_argument("-t", "--numTimes", type=int, default="1", help="The number of times to send the packet (-1 to send indefinitely).")
     args = parser.parse_args()
 
     if args.type == "rh0":
@@ -77,7 +77,6 @@ if __name__ == "__main__":
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562"
         ]
         pkt = makeRH0(args.dstip, addrs[:args.numDevices])
-    
     else:
         # Random SIDs
         sids = [1,2,3,4,5,6,7,8,9,10,11,12]
@@ -86,6 +85,9 @@ if __name__ == "__main__":
         else:
             pkt = makeCRH32(args.dstip, sids[:args.numDevices])
 
-    
-    for i in range(args.numTimes):
-        send(pkt)
+    if args.numTimes == -1:
+        while True:
+            send(pkt)
+    else:
+        for i in range(args.numTimes):
+            send(pkt)
