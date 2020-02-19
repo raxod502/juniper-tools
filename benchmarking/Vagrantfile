@@ -16,9 +16,6 @@ Vagrant.configure("2") do |config|
     sender.vm.network "private_network", ip: "fde4:8dba:82e0::c4", netmask: "64", virtualbox__intnet: "nw0"
     sender.vm.network "private_network", ip: "fde4:8dba:82e1::c4", netmask: "64", virtualbox__intnet: "nw1"
     sender.vm.hostname = "sender"
-    #sender.vm.provision "shell", run: "always", inline: "sudo ip -6 route del to fde4:8dba:82e1::c4/128 dev enp0s9 table local"
-    #sender.vm.provision "shell", run: "always", inline: "sudo route -A inet6 add fde4:8dba:82e1::c4 gw fde4:8dba:82e0::c5 dev enp0s8"
-    #sender.vm.provision "shell", run: "always", inline: "sudo route -A inet6 add default gw fde4:8dba:82e0::c5 dev enp0s8"
   end
 
   config.vm.define "router" do |router|
@@ -26,6 +23,9 @@ Vagrant.configure("2") do |config|
     router.vm.network "private_network", ip: "fde4:8dba:82e1::c5", netmask: "64", virtualbox__intnet: "nw1"
     router.vm.hostname = "router"
     router.vm.provision "shell", run: "always", inline: "sudo sysctl -w net.ipv6.conf.all.forwarding=1"
+    router.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--cpus", "1", "--cpuexecutioncap", "20"]
+    end
   end
 
   config.vm.box = "ubuntu/bionic64"

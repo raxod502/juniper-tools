@@ -1,9 +1,9 @@
-from scapy.all import Ether, IPv6, IPv6ExtHdrRouting, UDP, Raw, sendp, send, ls, sniff, conf
-from threading import Timer, Lock
+from scapy.all import Ether, IPv6, IPv6ExtHdrRouting, UDP, sendp, ls, conf
 from struct import pack
 from time import time
 from argparse import ArgumentParser
 
+import constants as C
 
 def makePacket(dstip, rthdr):
     # MAC address of router interface on senderSend private network.
@@ -58,32 +58,28 @@ def makeCRH32(dstip, sids):
 
 
 if __name__ == "__main__":
-    senderSendIp = "fde4:8dba:82e0::c4"
-    senderRecvIp = "fde4:8dba:82e1::c4"
-    routerVmIp = "fde4:8dba:82e0::c5"
-
     conf.route6.flush()
-    conf.route6.add(dst="fde4:8dba:82e1::c4/128", gw="fde4:8dba:82e0::c5", dev="enp0s8")
+    conf.route6.add(dst=C.senderRecvIp, gw=C.routerVmIp, dev=C.senderSendIf)
 
     parser = ArgumentParser("Send RH0 and CRH packets.")
     parser.add_argument("type", choices=["rh0", "crh16", "crh32"],
         help="Type of routing extension header")
-    # parser.add_argument("-d", "--dstip", type=str, default=senderRecvIp,
-    #     help="Destination IPv6 address")
     parser.add_argument("-s", "--size", type=int, default=5,
         help="The number of IP addresses in the routing extension header")
-    parser.add_argument("-c", "--count", type=int, default=5,
+    parser.add_argument("-c", "--count", type=int, default=C.defaultCount,
         help="The number of packets to send.")
     parser.add_argument("-i", "--interval", type=int, default=0,
         help="The time (in seconds) between sending two packets.")
+    parser.add_argument("-v", "--verbose", default=False, action="store_true",
+        help="Print stuff.")
     args = parser.parse_args()
 
     if args.type == "rh0":
         # We want to go through the router first, then
         # to our receiver, and then we don't care.
         addrs = [
-            routerVmIp,
-            senderRecvIp,
+            C.routerVmIp,
+            C.senderRecvIp,
             "b03b:c9d2:bd5d:923e:5adf:9675:e903:27ea",
             "5d45:828f:f53b:e43c:ef68:6991:a9ae:5a9b",
             "6374:f8d4:e316:fc7c:279b:5884:fd9e:ddf4",
@@ -95,24 +91,26 @@ if __name__ == "__main__":
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562"
         ]
-        pkt = makeRH0(senderRecvIp, addrs[:args.size])
+        pkt = makeRH0(C.senderRecvIp, addrs[:args.size])
     else:
         # Random SIDs. TODO: These will need to be set up correctly.
         sids = [1,2,3,4,5,6,7,8,9,10,11,12]
         if args.type == "crh16":
-            pkt = makeCRH16(senderRecvIp, sids[:args.size])
+            pkt = makeCRH16(C.senderRecvIp, sids[:args.size])
         else:
-            pkt = makeCRH32(senderRecvIp, sids[:args.size])
+            pkt = makeCRH32(C.senderRecvIp, sids[:args.size])
 
-    print(
-        f"Sending {args.count} {args.type} packet(s) with "
-        f"{args.size} device(s) and an interval of {args.interval}.")
-    print()
-    print("---------------\nPACKET FIELDS\n---------------")
-    print(ls(pkt))
+    if args.verbose:
+        print(
+            f"Sending {args.count} {args.type} packet(s) with "
+            f"{args.size} device(s) and an interval of {args.interval}.")
+        print()
+        print("---------------\nPACKET FIELDS\n---------------")
+        print(ls(pkt))
 
     start = time()
-    sendp(pkt, count=args.count, inter=args.interval, iface="enp0s8")
+    sendp(pkt, count=args.count, inter=args.interval, iface=C.senderSendIf)
     stop = time()
 
-    print(f"Took {stop - start} seconds (wall clock).")
+    if args.verbose:
+        print(f"Took {stop - start} seconds (wall clock).")
