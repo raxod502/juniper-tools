@@ -1,4 +1,4 @@
-from scapy.all import Ether, IPv6, IPv6ExtHdrRouting, UDP, Raw, sendp, ls
+from scapy.all import Ether, IPv6, IPv6ExtHdrRouting, UDP, Raw, sendp, send, ls, sniff, conf
 from threading import Timer, Lock
 from struct import pack
 from time import time
@@ -6,8 +6,9 @@ from argparse import ArgumentParser
 
 
 def makePacket(dstip, rthdr):
-    # Receiver VM MAC address. Don't know why Scapy can't figure this out on its own.
-    eth = Ether(dst="08:00:27:a1:ca:9a")
+    # MAC address of router interface on senderSend private network.
+    # Don't know why Scapy can't figure this out on its own.
+    eth = Ether(dst="08:00:27:e4:a8:2f")
 
     iphdr = IPv6()
     iphdr.dst = dstip
@@ -57,17 +58,21 @@ def makeCRH32(dstip, sids):
 
 
 if __name__ == "__main__":
-    receiverVmIp = "fde4:8dba:82e1::c4"
+    senderSendIp = "fde4:8dba:82e0::c4"
+    senderRecvIp = "fde4:8dba:82e1::c4"
     routerVmIp = "fde4:8dba:82e0::c5"
+
+    conf.route6.flush()
+    conf.route6.add(dst="fde4:8dba:82e1::c4/128", gw="fde4:8dba:82e0::c5", dev="enp0s8")
 
     parser = ArgumentParser("Send RH0 and CRH packets.")
     parser.add_argument("type", choices=["rh0", "crh16", "crh32"],
         help="Type of routing extension header")
-    parser.add_argument("-d", "--dstip", type=str, default=receiverVmIp,
-        help="Destination IPv6 address")
+    # parser.add_argument("-d", "--dstip", type=str, default=senderRecvIp,
+    #     help="Destination IPv6 address")
     parser.add_argument("-s", "--size", type=int, default=5,
         help="The number of IP addresses in the routing extension header")
-    parser.add_argument("-c", "--count", type=int, default=1,
+    parser.add_argument("-c", "--count", type=int, default=5,
         help="The number of packets to send.")
     parser.add_argument("-i", "--interval", type=int, default=0,
         help="The time (in seconds) between sending two packets.")
@@ -78,7 +83,7 @@ if __name__ == "__main__":
         # to our receiver, and then we don't care.
         addrs = [
             routerVmIp,
-            receiverVmIp,
+            senderRecvIp,
             "b03b:c9d2:bd5d:923e:5adf:9675:e903:27ea",
             "5d45:828f:f53b:e43c:ef68:6991:a9ae:5a9b",
             "6374:f8d4:e316:fc7c:279b:5884:fd9e:ddf4",
@@ -90,17 +95,17 @@ if __name__ == "__main__":
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562"
         ]
-        pkt = makeRH0(args.dstip, addrs[:args.size])
+        pkt = makeRH0(senderRecvIp, addrs[:args.size])
     else:
         # Random SIDs. TODO: These will need to be set up correctly.
         sids = [1,2,3,4,5,6,7,8,9,10,11,12]
         if args.type == "crh16":
-            pkt = makeCRH16(args.dstip, sids[:args.size])
+            pkt = makeCRH16(senderRecvIp, sids[:args.size])
         else:
-            pkt = makeCRH32(args.dstip, sids[:args.size])
+            pkt = makeCRH32(senderRecvIp, sids[:args.size])
 
     print(
-        f"Sending {args.count} {args.type} packet(s) to {args.dstip} with "
+        f"Sending {args.count} {args.type} packet(s) with "
         f"{args.size} device(s) and an interval of {args.interval}.")
     print()
     print("---------------\nPACKET FIELDS\n---------------")
