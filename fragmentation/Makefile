@@ -172,7 +172,7 @@ clean: ## Remove all Linux build artifacts, except config and editor files
 # Build artifacts have been removed. You may want to re-create them
 # with 'make kernel'.
 
-cleanall: ## Remove *all* Linux build artifacts, including config and editor tooling
+cleanall: ## Remove *all* Linux build artifacts, including config and editor files
 	git -C $(LINUX) clean -ffdX
 	@$(MSG)
 
@@ -220,6 +220,14 @@ kernel: ## Compile kernel (host-only)
 # from scratch, you can't do it after the modified kernel is already
 # installed and running.
 
+install: ## Install kernel (VM-only)
+	@$(REQUIRE_VM)
+	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install -j$$(nproc)
+	@$(MSG)
+
+# The kernel has been installed. You may now want to run 'make
+# reboot<VM>' from the host machine to switch over to the new kernel.
+
 ########################################
 ## Editor support
 
@@ -245,14 +253,6 @@ dirlocals: ## Create .dir-locals.el to configure Emacs for kernel development
 
 # A .dir-locals.el file has been generated. Now Emacs will use correct
 # indentation and style settings for C source code in the kernel.
-
-install: ## Install kernel (VM-only)
-	@$(REQUIRE_VM)
-	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install -j$$(nproc)
-	@$(MSG)
-
-# The kernel has been installed. You may now want to run 'make
-# reboot<VM>' from the host machine to switch over to the new kernel.
 
 ########################################
 ## Test implementation
