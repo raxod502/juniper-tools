@@ -1,0 +1,37 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+["vagrant-disksize", "vagrant-reload", "vagrant-vbguest"].each do |plugin|
+  unless Vagrant.has_plugin?(plugin)
+    system("vagrant plugin install #{plugin}")
+  end
+end
+
+Vagrant.configure("2") do |config|
+  config.vm.provider "virtualbox" do |v|
+    v.gui = false
+  end
+
+  config.vm.define "sender", primary: true do |sender|
+    sender.vm.network "private_network", ip: "fde4:8dba:82e0::c4", netmask: "64", virtualbox__intnet: "nw0"
+    sender.vm.network "private_network", ip: "fde4:8dba:82e1::c4", netmask: "64", virtualbox__intnet: "nw1"
+    sender.vm.hostname = "sender"
+  end
+
+  config.vm.define "router" do |router|
+    router.vm.network "private_network", ip: "fde4:8dba:82e0::c5", netmask: "64", mac: "080027e4a82f", virtualbox__intnet: "nw0"
+    router.vm.network "private_network", ip: "fde4:8dba:82e1::c5", netmask: "64", virtualbox__intnet: "nw1"
+    router.vm.hostname = "router"
+    router.vm.provision "shell", run: "always", inline: "sudo sysctl -w net.ipv6.conf.all.forwarding=1"
+    router.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--cpus", "1", "--cpuexecutioncap", "20"]
+    end
+  end
+
+  config.vm.box = "ubuntu/bionic64"
+  config.disksize.size = '50GB'
+
+  config.vm.provision :shell, path: "scripts/provision.bash"
+  config.vm.provision :reload
+
+end
