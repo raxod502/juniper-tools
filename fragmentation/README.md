@@ -48,10 +48,8 @@ Makefile variables):
   receiver VM can see the link between the two routers when its MTU is
   reduced, so they can only find out via ICMP.
 * `$HEADLESS`: if empty, then the VMs will be accessible via graphical
-  ttys. Furthermore, you can use Wireshark from the VMs to inspect
-  packet traffic by means of `make wireshark`. If non-empty, then
-  Vagrant is instructed to disable the GUIs for the VMs. You can still
-  use tshark in this configuration.
+  ttys. If non-empty, then Vagrant is instructed to disable the GUIs
+  for the VMs. You can still use tshark in this configuration.
 
 ### Setup
 

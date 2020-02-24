@@ -26,19 +26,9 @@ xz-utils
 ntp
 
 # inspect packet traffic, for development&testing
-tshark
-
-"
-
-if [[ -z "$HEADLESS" ]]; then
-    extra_packages="
-
-# inspecting packet traffic with GUI
 wireshark
 
 "
-    packages="${packages}${extra_packages}"
-fi
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update

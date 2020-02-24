@@ -42,12 +42,7 @@ else
 	RECV_IP := 192.168.33.11
 endif
 
-REQUIRE_NOHEADLESS :=
-SSH_ARGS :=
-ifneq (,$(HEADLESS))
-	REQUIRE_NOHEADLESS := echo "this command may not be run in headless mode" >&2; exit 1
-	SSH_ARGS := -- -X
-endif
+SSH_ARGS := -- -X
 
 TSHARK := sudo tshark -T fields -e frame.number  -e _ws.col.Source \
 	-e _ws.col.Destination -e _ws.col.Protocol -e icmp.type \
@@ -259,7 +254,6 @@ dirlocals: ## Create .dir-locals.el to configure Emacs for kernel development
 
 wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only, GUI-only)
 	@$(REQUIRE_VM)
-	@$(REQUIRE_NOHEADLESS)
 	sudo wireshark >/dev/null 2>&1 &
 	@$(MSG)
 

@@ -66,18 +66,11 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  config.ssh.forward_env = ["HEADLESS", "VM"]
+  config.ssh.forward_env = ["VM"]
 
   config.vm.box = "ubuntu/bionic64"
   config.disksize.size = "50GB"
-
-  # Pass HEADLESS env variable as command-line argument since SSH does
-  # not allow environment variable passthrough by default
-  # (irrespective of config.ssh.forward_env). We fix this problem in
-  # the provision script but the change won't take effect until after
-  # the provision script has *finished* running and we've rebooted the
-  # VM.
-  config.vm.provision :shell, path: "scripts/provision.bash", args: [ENV.fetch("HEADLESS", "")]
+  config.vm.provision :shell, path: "scripts/provision.bash"
   config.vm.provision :reload
 
   if File.directory? "../../juniper-linux"
