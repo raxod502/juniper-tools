@@ -36,12 +36,23 @@ else ifeq ($(HOSTNAME),receiver)
 	REQUIRE_RECEIVER :=
 endif
 
+ifeq (,$(ROUTERS))
+	RECV_IP := 192.168.66.11
+else
+	RECV_IP := 192.168.33.11
+endif
+
 REQUIRE_NOHEADLESS :=
 SSH_ARGS :=
 ifneq (,$(HEADLESS))
 	REQUIRE_NOHEADLESS := echo "this command may not be run in headless mode" >&2; exit 1
 	SSH_ARGS := -- -X
 endif
+
+TSHARK := sudo tshark -T fields -e frame.number  -e _ws.col.Source \
+	-e _ws.col.Destination -e _ws.col.Protocol -e icmp.type \
+	-E header=y -e data.len -e _ws.col.Info \
+	-f "host $(RECV_IP) and (icmp or tcp or udp)"
 
 ########################################
 ## Integrated documentation utilities
@@ -246,7 +257,7 @@ install: ## Install kernel (VM-only)
 ########################################
 ## Test implementation
 
-wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
+wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only, GUI-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_NOHEADLESS)
 	sudo wireshark >/dev/null 2>&1 &
@@ -255,15 +266,26 @@ wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
 # Wireshark should now be open on your host machine. If it's not,
 # something has gone wrong with the X forwarding configuration.
 
+tshark: ## Launch tshark to inspect VM network traffic (VM-only)
+	@$(REQUIRE_VM)
+	@if [ $(HOSTNAME) = sender -a -z $(ROUTERS) ]; then;				\
+		$(TSHARK) -i enp0s8;							\
+	elif [ $(HOSTNAME) = sender -a -n $(ROUTERS) ]; then;				\
+		$(TSHARK) -i enp0s9;							\
+	elif [ $(HOSTNAME) = receiver_router -a -n $(ROUTERS) ]; then;			\
+		$(TSHARK) -i enp0s9;							\
+	else;										\
+		echo "this can only be run from the sender or receiver_router" >&2;	\
+		exit 1;									\
+	fi
+
 tcp: ## Initialize TCP connection (VM-only)
 	@$(REQUIRE_VM)
 	sudo sysctl net/ipv4/ip_no_pmtu_disc=1
-	@if [ $(HOSTNAME) = receiver ]]; then					\
+	@if [ $(HOSTNAME) = receiver ]; then					\
 		nc -l 3000;							\
-	elif [ $(HOSTNAME) = sender -a -z $(ROUTERS) ]; then			\
-		nc 192.168.66.11 3000;						\
-	elif [ $(HOSTNAME) = sender -a -n $(ROUTERS) ]; then			\
-		nc 192.168.33.11 3000;						\
+	elif [ $(HOSTNAME) = sender ]; then					\
+		nc $(RECV_IP) 3000;						\
 	else									\
 		echo "this can only be run from the sender or receiver" >&2;	\
 		exit 1; 							\
@@ -319,20 +341,12 @@ mtu: ## Set the path MTU to any value (e.g. make mtu MTU=400) (VM-only)
 check: ## Check the path MTU cache (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
-	@if [ -n $(ROUTERS) ]; then\
-		ip route get to 192.168.66.11;\
-	else\
-		ip route get to 192.168.33.11;\
-	fi
+	ip route get to $(RECV_IP)
 
 clear: ## Clear the path MTU cache (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
-	@if [ -n $(ROUTERS) ]; then\
-		sudo ip route flush cache to 192.168.66.11;\
-	else\
-		sudo ip route flush cache to 192.168.33.11;\
-	fi
+	sudo ip route flush cache to $(RECV_IP)
 	@$(MSG)
 
 # The path MTU cache has been cleared, as you can see by running 'make

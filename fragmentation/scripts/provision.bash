@@ -25,12 +25,15 @@ xz-utils
 # https://stackoverflow.com/a/21365600/3538165
 ntp
 
+# inspect packet traffic, for development&testing
+tshark
+
 "
 
 if [[ -z "$HEADLESS" ]]; then
     extra_packages="
 
-# inspect packet traffic, for development&testing
+# inspecting packet traffic with GUI
 wireshark
 
 "
