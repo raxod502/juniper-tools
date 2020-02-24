@@ -132,66 +132,6 @@ listed in the [`Vagrantfile`](Vagrantfile). You can connect to them
 using SSH, with the default username and password (`vagrant` /
 `vagrant`).
 
-### Make targets
-
-Run `make help` for information on what you can do. Here's the general
-workflow. If you want to clear things out from a previous run
-(although this shouldn't be necessary unless something is messed up),
-run
-
-    $ make clean
-
-to remove the kernel build artifacts from your source repository and
-run
-
-    $ make destroy
-
-to remove the VMs and their filesystems, so everything will be
-re-provisioned next time.
-
-Then, to get started, run
-
-    $ make vm
-
-to provision both the sender and receiver VMs. Once they are booted,
-select one of them and SSH into it by running
-
-    $ make ssh [VM=sender | VM=receiver]
-
-(the default is `sender` if you omit the `VM` argument). At this
-point, it is time to build the kernel. This requires three steps:
-configure, compile, and install. The first step must be done from
-inside a VM because the configuration script needs to look at the
-running VM and determine which modules must be built to support our
-use case. Run:
-
-    $ make configure
-
-Then, from the host machine (otherwise it will be much slower), run:
-
-    $ make kernel
-
-Finally, from within each VM that you want to update, run:
-
-    $ make install
-
-In order to boot from the newly installed kernel, restart the VMs
-using:
-
-    $ make reboot
-
-Note that the `make vm`, `make reboot`, and `make destroy` commands
-also take an optional `VM=sender` or `VM=receiver` argument to only
-act on a single VM instead of both of them.
-
-To send a large packet, run
-
-    $ make packet
-
-from the sender VM. Then you can inspect the kernel logs by running
-`dmesg` on both the sender and receiver VMs. This will show you what
-was printed by `printk` calls in the kernel code.
-
 ## Compilation cache
 
 It is recommended that you install [ccache](https://ccache.dev/) and
