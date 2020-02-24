@@ -4,9 +4,6 @@ from threading import Lock
 
 import constants as C
 
-pktsReceived = 0
-lock = Lock()
-
 def packetFilter(pkt):
     return hasattr(pkt, "nh") and pkt.nh == 43
 
@@ -16,17 +13,20 @@ def packetFilter(pkt):
 # *random ICMPv6 packets are also being transmitted
 
 # TODO: Figure out why this code is wrong. Results don't match
-# output from ifconfig.
-def onPacketReceived(pkt):
-    global pktsReceived
-    global lock
+# output from ifconfig and wireshark.
+def onPacketReceived(pktsReceived, lock):
+    def helper(pkt):
+        nonlocal lock
+        nonlocal pktsReceived
+        if lock.locked():
+            print("locked")
+        lock.acquire()
+        print(pktsReceived)
+        pktsReceived += 1
+        lock.release()
+        return pktsReceived
+    return helper
 
-    lock.acquire()
-    pktsReceived += 1
-    # print(pktsReceived)
-    lock.release()
-
-    # print(pkt.summary())
 
 if __name__ == "__main__":
     parser = ArgumentParser("Receive RH0 and CRH packets.")
@@ -36,12 +36,15 @@ if __name__ == "__main__":
         help="The number of seconds to sniff for.")
     args = parser.parse_args()
 
+    pktsReceived = 0
+    lock = Lock()
+
     sniff(
         lfilter=packetFilter,
         store=False,
         timeout=args.timeout,
         count=args.count,
         iface="enp0s9",
-        prn=onPacketReceived)
+        prn=onPacketReceived(pktsReceived, lock))
 
     print(f"Total of {pktsReceived} packets received.")
