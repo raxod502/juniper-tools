@@ -3,6 +3,8 @@
 set -e
 set -o pipefail
 
+HEADLESS="$1"
+
 cd /tmp
 
 packages="
@@ -24,15 +26,28 @@ xz-utils
 ntp
 
 # inspect packet traffic, for development&testing
+tshark
+
+"
+
+if [[ -z "$HEADLESS" ]]; then
+    extra_packages="
+
+# inspecting packet traffic with GUI
 wireshark
 
 "
+    packages="${packages}${extra_packages}"
+fi
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y $(grep -v "^#" <<< "$packages")
 # No need to remove /var/lib/apt/lists as we're not building a Docker
 # image.
+
+# Make SSH allow passing environment variables (e.g. VM).
+sudo sed -i 's/AcceptEnv .*/AcceptEnv */' /etc/ssh/sshd_config
 
 # Try to be idempotent.
 if ! grep "source /vagrant/scripts/profile.bash" /home/vagrant/.bashrc &>/dev/null; then

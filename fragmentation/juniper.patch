@@ -1,0 +1,137 @@
+diff --git a/include/uapi/linux/icmp.h b/include/uapi/linux/icmp.h
+index 5589eeb791ca..ddaef4521e02 100644
+--- a/include/uapi/linux/icmp.h
++++ b/include/uapi/linux/icmp.h
+@@ -33,7 +33,8 @@
+ #define ICMP_INFO_REPLY		16	/* Information Reply		*/
+ #define ICMP_ADDRESS		17	/* Address Mask Request		*/
+ #define ICMP_ADDRESSREPLY	18	/* Address Mask Reply		*/
+-#define NR_ICMP_TYPES		18
++#define ICMP_PKT_REASM		253	/* Report Packet Reassembly	*/
++#define NR_ICMP_TYPES		253
+ 
+ 
+ /* Codes for UNREACH. */
+@@ -80,6 +81,11 @@ struct icmphdr {
+ 		__be16	__unused;
+ 		__be16	mtu;
+ 	} frag;
++	struct {
++		__u8	__unused;
++		__u8	orig_dg_len;
++		__be16	mtu;
++	} reasm;
+ 	__u8	reserved[4];
+   } un;
+ };
+diff --git a/net/ipv4/icmp.c b/net/ipv4/icmp.c
+index 92b3d2d1139e..76df9aafe32b 100644
+--- a/net/ipv4/icmp.c
++++ b/net/ipv4/icmp.c
+@@ -853,6 +853,9 @@ static bool icmp_unreach(struct sk_buff *skb)
+ 		if (icmph->code == ICMP_EXC_FRAGTIME)
+ 			goto out;
+ 		break;
++	case ICMP_PKT_REASM:
++		info = ntohs(icmph->un.reasm.mtu);
++		break;
+ 	}
+ 
+ 	/*
+@@ -1099,7 +1102,8 @@ int icmp_err(struct sk_buff *skb, u32 info)
+ 		return 0;
+ 	}
+ 
+-	if (type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED)
++	if ((type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED) ||
++	    type == ICMP_PKT_REASM)
+ 		ipv4_update_pmtu(skb, net, info, 0, IPPROTO_ICMP);
+ 	else if (type == ICMP_REDIRECT)
+ 		ipv4_redirect(skb, net, 0, IPPROTO_ICMP);
+@@ -1179,6 +1183,9 @@ static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1] = {
+ 	[ICMP_ADDRESSREPLY] = {
+ 		.handler = icmp_discard,
+ 	},
++	[ICMP_PKT_REASM] = {
++		.handler = icmp_unreach,
++	},
+ };
+ 
+ static void __net_exit icmp_sk_exit(struct net *net)
+diff --git a/net/ipv4/ip_fragment.c b/net/ipv4/ip_fragment.c
+index cf2b0a6a3337..deb742bf017a 100644
+--- a/net/ipv4/ip_fragment.c
++++ b/net/ipv4/ip_fragment.c
+@@ -404,6 +404,8 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
+ 	void *reasm_data;
+ 	int len, err;
+ 	u8 ecn;
++	u_int16_t orig_dg_len;
++	u_int32_t icmp_info;
+ 
+ 	ipq_kill(qp);
+ 
+@@ -449,6 +451,16 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
+ 
+ 	ip_send_check(iph);
+ 
++	/* Original datagram length in 32-bit words,
++	 * up to 576 - 8 = 568 bytes (568 / 4 = 142 32-bit words) */
++	orig_dg_len = len > 568 ? 142 : (len - 1) / 4 + 1;
++	icmp_info = (orig_dg_len << 16) + IPCB(skb)->frag_max_size;
++
++	/* skb has no dst, perform route lookup again */
++	err = ip_route_input_noref(skb, iph->daddr, iph->saddr,
++				   iph->tos, skb->dev);
++	icmp_send(skb, ICMP_PKT_REASM, 0, htonl(icmp_info));
++
+ 	__IP_INC_STATS(net, IPSTATS_MIB_REASMOKS);
+ 	qp->q.rb_fragments = RB_ROOT;
+ 	qp->q.fragments_tail = NULL;
+diff --git a/net/ipv4/raw.c b/net/ipv4/raw.c
+index 40a6abbc9cf6..a6b7a2c2f4a2 100644
+--- a/net/ipv4/raw.c
++++ b/net/ipv4/raw.c
+@@ -230,7 +230,8 @@ static void raw_err(struct sock *sk, struct sk_buff *skb, u32 info)
+ 	int err = 0;
+ 	int harderr = 0;
+ 
+-	if (type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED)
++	if ((type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED) ||
++	    type == ICMP_PKT_REASM)
+ 		ipv4_sk_update_pmtu(skb, sk, info);
+ 	else if (type == ICMP_REDIRECT) {
+ 		ipv4_sk_redirect(skb, sk);
+diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
+index cfa81190a1b1..b1f9718d1095 100644
+--- a/net/ipv4/tcp_ipv4.c
++++ b/net/ipv4/tcp_ipv4.c
+@@ -498,10 +498,12 @@ int tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
+ 		err = EPROTO;
+ 		break;
+ 	case ICMP_DEST_UNREACH:
+-		if (code > NR_ICMP_UNREACH)
++	case ICMP_PKT_REASM:
++		if (type == ICMP_DEST_UNREACH && code > NR_ICMP_UNREACH)
+ 			goto out;
+ 
+-		if (code == ICMP_FRAG_NEEDED) { /* PMTU discovery (RFC1191) */
++		/* PMTU discovery (RFC1191) */
++		if (type == ICMP_PKT_REASM || code == ICMP_FRAG_NEEDED) {
+ 			/* We are not interested in TCP_LISTEN and open_requests
+ 			 * (SYN-ACKs send out by Linux are always <576bytes so
+ 			 * they should go through unfragmented).
+diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
+index 665f26e32d77..bdc2bfa68df4 100644
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -709,6 +709,9 @@ int __udp4_lib_err(struct sk_buff *skb, u32 info, struct udp_table *udptable)
+ 	case ICMP_REDIRECT:
+ 		ipv4_sk_redirect(skb, sk);
+ 		goto out;
++	case ICMP_PKT_REASM:
++		ipv4_sk_update_pmtu(skb, sk, info);
++		goto out;
+ 	}
+ 
+ 	/*
