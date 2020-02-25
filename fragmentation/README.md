@@ -84,7 +84,7 @@ Makefile variables):
   routers (if testing with routers). To access the routers, run `make
   ssh VM=(sender_router|receiver_router)`.
 * Check that there is no data in the PMTU cache on the sender by
-  running `make check_cache`.
+  running `make check`.
 * If desired, open Wireshark using `make wireshark` (or tshark using
   `make tshark`) on the sender.
 * Paste the contents of `packet_data.txt` into the netcat session on
@@ -92,7 +92,7 @@ Makefile variables):
     * Observe in Wireshark that the data is fragmented and ICMP Packet
       Reassembled is transmitted back to the sender.
 * Check that there is now updated data in the PMTU cache on the sender
-  by running `make check_cache` again.
+  by running `make check` again.
 * Paste more data into the netcat session on the sender.
     * Observe in Wireshark that the data is no longer fragmented.
 * To reset, run `make reset` on the same machines that you ran `make
