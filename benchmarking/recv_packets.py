@@ -1,25 +1,37 @@
 from pcap import pcap
 from argparse import ArgumentParser
-from threading import Thread
-from time import sleep
+from threading import Timer
+from multiprocessing import Process, Value
 
 import constants as C
 
-pktsReceived = 0
+# pcap's timeout_ms option doesn't seem to be working, and I can't figure out how
+# to terminate Python threads, so I'm using multiprocessing as a workaround
 
-def sniff(count, verbose):
-    pktFilter = "ip6 and not icmp6"
-    sniffer = pcap(name="enp0s9", promisc=False, immediate=True)
-    sniffer.setfilter(pktFilter)
+pktsReceived = Value('i', lock=False)
 
+
+def sniff(expectedCount, verbose):
     def onPktReceived():
-        global pktsReceived
         nonlocal verbose
-        pktsReceived += 1
+        pktsReceived.value += 1
         if verbose:
-            print(pktsReceived)
+            print(pktsReceived.value)
 
-    sniffer.loop(count, lambda ts, pkt : onPktReceived())
+    sniffer = pcap(name="enp0s9", promisc=False, immediate=True)
+    sniffer.setfilter("ip6 and not icmp6")
+    sniffer.loop(expectedCount, lambda ts, pkt : onPktReceived())
+
+
+def main(expectedCount, timeout, verbose):
+    p = Process(target=sniff, args=(expectedCount, verbose))
+    def timeout():
+        nonlocal p
+        p.terminate()
+
+    Timer(args.timeout, timeout).start()
+    p.start()
+    p.join()
 
 
 if __name__ == "__main__":
@@ -32,14 +44,5 @@ if __name__ == "__main__":
         help="Print stuff.")
     args = parser.parse_args()
 
-    pktsReceived = 0
-    pktFilter = "ip6 and not icmp6"
-    sniffer = pcap(name="enp0s9", promisc=False)
-    sniffer.setfilter(pktFilter)
-
-    # pcap's timeout_ms option doesn't seem to be working, so
-    # we'll just put it in a thread and wait for a bit.
-    Thread(target=sniff, args=(args.count, args.verbose), daemon=True).start()
-    sleep(args.timeout)
-
-    print(f"Received {pktsReceived} packets.")
+    main(args.count, args.timeout, args.verbose)
+    print(f"Received {pktsReceived.value} packets.")
