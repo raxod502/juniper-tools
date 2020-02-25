@@ -1,3 +1,5 @@
+SHELL=/bin/bash
+
 ########################################
 ## User-facing Makefile variables
 
@@ -62,6 +64,7 @@ MSG = (cat Makefile && echo "\#\#")			| \
 	head -n-1					| \
 	sed 's/<VM>/$(if $(VM), VM=$(VM),)/g'		| \
 	scripts/box.bash
+
 
 help: ## Display this message
 	@echo 'usage:' && (						\
@@ -293,7 +296,7 @@ tcp: ## Initialize TCP connection (VM-only)
 # only on the two routers.)
 
 reduce: ## Reduce the path MTU (VM-only)
-	@make mtu MTU=400
+	@make mtu MTU=800
 	@$(MSG)
 
 # Once you have reduced the link MTUs on both sender and receiver
