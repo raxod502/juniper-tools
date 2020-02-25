@@ -1,31 +1,25 @@
-from scapy.all import sniff, Packet, ls, send
+from pcap import pcap
 from argparse import ArgumentParser
-from threading import Lock
+from threading import Thread
+from time import sleep
 
 import constants as C
 
-def packetFilter(pkt):
-    return hasattr(pkt, "nh") and pkt.nh == 43
+pktsReceived = 0
 
-# NOTE: We can also use "ifconfig" and check the difference between
-# RX packets under enp0s8 and TX packets under enp0s9 to approximately*
-# see if a lot of packets were dropped.
-# *random ICMPv6 packets are also being transmitted
+def sniff(count, verbose):
+    pktFilter = "ip6 and not icmp6"
+    sniffer = pcap(name="enp0s9", promisc=False, immediate=True)
+    sniffer.setfilter(pktFilter)
 
-# TODO: Figure out why this code is wrong. Results don't match
-# output from ifconfig and wireshark.
-def onPacketReceived(pktsReceived, lock):
-    def helper(pkt):
-        nonlocal lock
-        nonlocal pktsReceived
-        if lock.locked():
-            print("locked")
-        lock.acquire()
-        print(pktsReceived)
+    def onPktReceived():
+        global pktsReceived
+        nonlocal verbose
         pktsReceived += 1
-        lock.release()
-        return pktsReceived
-    return helper
+        if verbose:
+            print(pktsReceived)
+
+    sniffer.loop(count, lambda ts, pkt : onPktReceived())
 
 
 if __name__ == "__main__":
@@ -34,17 +28,18 @@ if __name__ == "__main__":
         help="The number of packets expected.")
     parser.add_argument("-t", "--timeout", type=int, default=10,
         help="The number of seconds to sniff for.")
+    parser.add_argument("-v", "--verbose", default=False, action="store_true",
+        help="Print stuff.")
     args = parser.parse_args()
 
     pktsReceived = 0
-    lock = Lock()
+    pktFilter = "ip6 and not icmp6"
+    sniffer = pcap(name="enp0s9", promisc=False)
+    sniffer.setfilter(pktFilter)
 
-    sniff(
-        lfilter=packetFilter,
-        store=False,
-        timeout=args.timeout,
-        count=args.count,
-        iface="enp0s9",
-        prn=onPacketReceived(pktsReceived, lock))
+    # pcap's timeout_ms option doesn't seem to be working, so
+    # we'll just put it in a thread and wait for a bit.
+    Thread(target=sniff, args=(args.count, args.verbose), daemon=True).start()
+    sleep(args.timeout)
 
-    print(f"Total of {pktsReceived} packets received.")
+    print(f"Received {pktsReceived} packets.")

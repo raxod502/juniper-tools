@@ -26,11 +26,15 @@ ntp
 # inspect packet traffic, for development&testing
 wireshark
 python3-scapy
+libpcap-dev
+python-dev
+python3-pip #(sorry Radon, lol)
 "
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y $(grep -v "^#" <<< "$packages")
+pip3 install pypcap
 # No need to remove /var/lib/apt/lists as we're not building a Docker
 # image.
 
