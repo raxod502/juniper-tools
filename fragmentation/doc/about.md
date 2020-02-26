@@ -106,6 +106,9 @@ implementation of UDP could reduce fragmentation by inspecting ICMP
 Packet Reassembled messages than it is to see how PMTUD could be used
 for UDP.
 
+Please refer to the published Internet Draft
+[here](https://tools.ietf.org/html/draft-bonica-intarea-lossless-pmtud-01).
+
 ## Implementation
 
 Our implementation is in the context of the Linux kernel. The patch is
