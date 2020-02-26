@@ -25,18 +25,19 @@ ntp
 
 # inspect packet traffic, for development&testing
 wireshark
-python3-scapy
 libpcap-dev
-python-dev
-python3-pip #(sorry Radon, lol)
+python3-dev
+python3-pip
 "
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y $(grep -v "^#" <<< "$packages")
-pip3 install pypcap
 # No need to remove /var/lib/apt/lists as we're not building a Docker
 # image.
+
+pip3 install scapy==2.4.3
+pip3 install pypcap==1.2.3
 
 # Try to be idempotent.
 if ! grep "source /vagrant/scripts/profile.bash" /home/vagrant/.bashrc &>/dev/null; then
