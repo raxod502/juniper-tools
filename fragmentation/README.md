@@ -5,6 +5,9 @@ into the Linux kernel (for that, see the
 [juniper-linux](https://github.com/raxod502/juniper-linux)
 repository).
 
+[This document](doc/about.md) explains the problem that our project
+solves, and how it does so.
+
 ## Setup
 
 First you must acquire the Linux source code. This can be done in one
@@ -48,8 +51,10 @@ Makefile variables):
   receiver VM can see the link between the two routers when its MTU is
   reduced, so they can only find out via ICMP.
 * `$HEADLESS`: if empty, then the VMs will be accessible via graphical
-  ttys. If non-empty, then Vagrant is instructed to disable the GUIs
-  for the VMs. You can still use tshark in this configuration.
+  ttys. This can be helpful for debugging, but might be annoying since
+  windows are created in your desktop environment when the VMs are
+  started. If non-empty, then Vagrant is instructed to disable the
+  GUIs for the VMs.
 
 ### Setup
 
