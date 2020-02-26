@@ -1,12 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-["vagrant-disksize", "vagrant-reload", "vagrant-vbguest"].each do |plugin|
-  unless Vagrant.has_plugin?(plugin)
-    system("vagrant plugin install --local #{plugin}")
-  end
-end
-
 def enabled?(var)
   val = ENV[var.upcase]
   if val == nil
@@ -22,6 +16,8 @@ def enabled?(var)
 end
 
 Vagrant.configure("2") do |config|
+  config.vagrant.plugins = ["vagrant-disksize", "vagrant-reload", "vagrant-vbguest"]
+
   config.vm.provider "virtualbox" do |v|
     v.gui = !enabled?("headless")
   end

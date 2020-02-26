@@ -1,5 +1,3 @@
-SHELL=/bin/sh
-
 ########################################
 ## User-facing Makefile variables
 
@@ -64,7 +62,6 @@ MSG = (cat Makefile && echo "\#\#")			| \
 	head -n-1					| \
 	sed 's/<VM>/$(if $(VM), VM=$(VM),)/g'		| \
 	scripts/box.bash
-
 
 help: ## Display this message
 	@echo 'usage:' && (						\
@@ -275,7 +272,7 @@ tcp: ## Initialize TCP connection (VM-only)
 	@$(REQUIRE_VM)
 	@if [ $(HOSTNAME) = receiver ]; then\
 		nc -l 3000;							\
-	elif [ $(HOSTNAME) = sender ]; then	 \
+	elif [ $(HOSTNAME) = sender ]; then					\
 		nc $(RECV_IP) 3000;						\
 	else									\
 		echo "this can only be run from the sender or receiver" >&2;	\
@@ -311,6 +308,7 @@ reset: ## Reset the path MTU to its original value
 
 mtu: ## Set the path MTU to any value (e.g. make mtu MTU=400) (VM-only)
 	@$(REQUIRE_VM)
+<<<<<<< HEAD
 	@if [ \( $(HOSTNAME) = receiver -o $(HOSTNAME) = sender \) -a -z $(ROUTERS) ]; then\
 		sudo ip link set mtu $(MTU) dev enp0s8;\
 	elif [ $(HOSTNAME) = sender-router -a -n $(ROUTERS) ]; then\
@@ -327,6 +325,24 @@ mtu: ## Set the path MTU to any value (e.g. make mtu MTU=400) (VM-only)
 	else\
 		echo "this can only be run from the intermediate routers" >&2;\
 		exit 1;\
+=======
+	@if [ \( $(HOSTNAME) = receiver -o $(HOSTNAME) = sender \) -a -z $(ROUTERS) ]; then	\
+		sudo ip link set mtu $(MTU) dev enp0s8;						\
+	elif [ $(HOSTNAME) = sender_router -a -n $(ROUTERS) ]; then				\
+		sudo ip link set mtu $(MTU) dev enp0s9;						\
+		sleep 3;									\
+		sudo route add -net 192.168.66.0/24 gw 192.168.50.200 dev enp0s9;		\
+	elif [ $(HOSTNAME) = receiver_router -a -n $(ROUTERS) ]; then				\
+		sudo ip link set mtu $(MTU) dev enp0s9;						\
+		sleep 3;									\
+		sudo route add -net 192.168.33.0/24 gw 192.168.50.101 dev enp0s9;		\
+	elif [ -z $(ROUTERS) ]; then 								\
+		echo "this can only be run from the sender or receiver" >&2;			\
+		exit 1;										\
+	else											\
+		echo "this can only be run from the intermediate routers" >&2;			\
+		exit 1;										\
+>>>>>>> dabc84bea7baf3762ddd5ed20cefb558cce7c47a
 	fi
 
 check: ## Check the path MTU cache (VM-only, sender-only)
