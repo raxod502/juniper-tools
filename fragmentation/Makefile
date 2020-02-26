@@ -255,7 +255,7 @@ dirlocals: ## Create .dir-locals.el to configure Emacs for kernel development
 ########################################
 ## Test implementation
 
-wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only, GUI-only)
+wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
 	@$(REQUIRE_VM)
 	sudo wireshark >/dev/null 2>&1 &
 	@$(MSG)
@@ -265,22 +265,15 @@ wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only, GUI-only)
 
 tshark: ## Launch tshark to inspect VM network traffic (VM-only)
 	@$(REQUIRE_VM)
-	if [ $(HOSTNAME) = sender -a -z $(ROUTERS) ]; then				\
-		$(TSHARK) -i enp0s8;							\
-	elif [ $(HOSTNAME) = sender -a -n $(ROUTERS) ]; then				\
-		$(TSHARK) -i enp0s9;							\
-	elif [ $(HOSTNAME) = receiver_router -a -n $(ROUTERS) ]; then			\
-		$(TSHARK) -i enp0s9;							\
-	else										\
-		echo "this can only be run from the sender or receiver_router" >&2;	\
-		exit 1;									\
+	@if [ $(HOSTNAME) = sender -o $(HOSTNAME) = receiver ]; then\
+		$(TSHARK) -i enp0s8;									\
+	else														\
+		$(TSHARK) -i enp0s9;									\
 	fi
 
 tcp: ## Initialize TCP connection (VM-only)
 	@$(REQUIRE_VM)
-	echo $(ROUTERS)
-	sudo sysctl net/ipv4/ip_no_pmtu_disc=1
-	if [ $(HOSTNAME) = receiver ]; then\
+	@if [ $(HOSTNAME) = receiver ]; then\
 		nc -l 3000;							\
 	elif [ $(HOSTNAME) = sender ]; then	 \
 		nc $(RECV_IP) 3000;						\
@@ -320,11 +313,11 @@ mtu: ## Set the path MTU to any value (e.g. make mtu MTU=400) (VM-only)
 	@$(REQUIRE_VM)
 	@if [ \( $(HOSTNAME) = receiver -o $(HOSTNAME) = sender \) -a -z $(ROUTERS) ]; then\
 		sudo ip link set mtu $(MTU) dev enp0s8;\
-	elif [ $(HOSTNAME) = sender_router -a -n $(ROUTERS) ]; then\
+	elif [ $(HOSTNAME) = sender-router -a -n $(ROUTERS) ]; then\
 		sudo ip link set mtu $(MTU) dev enp0s9;\
 		sleep 3;\
 		sudo route add -net 192.168.66.0/24 gw 192.168.50.200 dev enp0s9;\
-	elif [ $(HOSTNAME) = receiver_router -a -n $(ROUTERS) ]; then\
+	elif [ $(HOSTNAME) = receiver-router -a -n $(ROUTERS) ]; then\
 		sudo ip link set mtu $(MTU) dev enp0s9;\
 		sleep 3;\
 		sudo route add -net 192.168.33.0/24 gw 192.168.50.101 dev enp0s9;\

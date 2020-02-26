@@ -3,8 +3,6 @@
 set -e
 set -o pipefail
 
-HEADLESS="$1"
-
 cd /tmp
 
 packages="
@@ -25,8 +23,9 @@ xz-utils
 # https://stackoverflow.com/a/21365600/3538165
 ntp
 
-# inspect packet traffic, for development&testing
+# inspect packet traffic, for development & testing
 wireshark
+tshark
 
 "
 

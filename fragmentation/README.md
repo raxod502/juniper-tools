@@ -75,6 +75,8 @@ Makefile variables):
 
 ### Test procedure
 
+* Check that there is no data in the PMTU cache on the sender by
+  running `make check`.
 * Set up a TCP connection between the sender and receiver by running
   `make tcp` on *first* the receiver (to start listening) and *then*
   the sender (to connect). This should be done before adjusting any
@@ -82,9 +84,7 @@ Makefile variables):
 * Reduce the MTU of the intermediate link by running `make reduce` on
   the sender and receiver (if testing without routers) or on the two
   routers (if testing with routers). To access the routers, run `make
-  ssh VM=(sender_router|receiver_router)`.
-* Check that there is no data in the PMTU cache on the sender by
-  running `make check`.
+  ssh VM=(sender-router|receiver-router)`.
 * If desired, open Wireshark using `make wireshark` (or tshark using
   `make tshark`) on the sender.
 * Paste the contents of `packet_data.txt` into the netcat session on
