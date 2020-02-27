@@ -18,24 +18,29 @@ if __name__ == "__main__":
         help="The number of sender processes.")
     parser.add_argument("-i", "--interval", type=float, default=0,
         help="The time (in seconds) between sending two packets.")
-    parser.add_argument("-t", "--timeout", type=int, default=10,
+    parser.add_argument("-t", "--timeout", type=float, default=10.0,
         help="The number of seconds to sniff for.")
+    parser.add_argument("-b", "--buffer", type=int, default=131072,
+        help="The tcpdump buffer size, in KiB.")
     parser.add_argument("-v", "--verbose", default=False, action="store_true",
         help="Print stuff.")
     args = parser.parse_args()
 
-    pSend = Process(target=runSender, args=(args.type, args.size, args.count, args.processes, args.interval, args.verbose))
-    pRecv = Process(target=runReceiver, args=(args.count * args.processes, args.timeout, args.verbose))
+    pSend = Process(
+        target=runSender,
+        args=(args.type, args.size, args.count, args.processes, args.interval, args.verbose))
+    pRecv = Process(
+        target=runReceiver,
+        args=(args.count * args.processes, args.timeout, args.buffer, args.verbose))
 
     pRecv.start()
-    # Let receiver get started. This is an unfortunate hack, but I can't set a variable
-    # inside the sniffer loop
+    # Let receiver get started. TODO: Make this better later.
     sleep(1)
     pSend.start()
     pSend.join()
     pRecv.join()
 
-    if pktsReceived:
+    if pktsReceived.value:
         print("Received all packets.")
     else:
         print("Did not receive all the packets.")

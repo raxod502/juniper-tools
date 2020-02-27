@@ -25,8 +25,8 @@ ntp
 
 # inspect packet traffic, for development & testing
 wireshark
-libpcap-dev
-python3-dev
+
+# scapy
 python3-pip
 "
 
@@ -37,8 +37,6 @@ apt-get install -y $(grep -v "^#" <<< "$packages")
 # image.
 
 pip3 install scapy==2.4.3
-pip3 install pypcap==1.2.3 # TODO: remove this if pcapy works better
-pip3 install pcapy
 
 # Try to be idempotent.
 if ! grep "source /vagrant/scripts/profile.bash" /home/vagrant/.bashrc &>/dev/null; then
