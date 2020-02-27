@@ -1,9 +1,17 @@
+import logging
+logging.getLogger("scapy.runtime").setLevel(logging.WARNING)
+
 from scapy.all import Ether, IPv6, IPv6ExtHdrRouting, UDP, sendp, ls, conf
 from struct import pack
 from time import time
 from argparse import ArgumentParser
+from multiprocessing import Process, Value
 
 import constants as C
+
+
+timeToSend = Value('d', lock=False)
+
 
 def makePacket(dstip, rthdr):
     # MAC address of router interface on senderSend private network.
@@ -57,24 +65,11 @@ def makeCRH32(dstip, sids):
     return makePacket(dstip, crh)
 
 
-if __name__ == "__main__":
+def runSender(hdrType, size, count, numProcs, interval, verbose):
     conf.route6.flush()
     conf.route6.add(dst=C.senderRecvIp, gw=C.routerVmIp, dev=C.senderSendIf)
 
-    parser = ArgumentParser("Send RH0 and CRH packets.")
-    parser.add_argument("type", choices=["rh0", "crh16", "crh32"],
-        help="Type of routing extension header")
-    parser.add_argument("-s", "--size", type=int, default=5,
-        help="The number of IP addresses in the routing extension header")
-    parser.add_argument("-c", "--count", type=int, default=C.defaultCount,
-        help="The number of packets to send.")
-    parser.add_argument("-i", "--interval", type=int, default=0,
-        help="The time (in seconds) between sending two packets.")
-    parser.add_argument("-v", "--verbose", default=False, action="store_true",
-        help="Print stuff.")
-    args = parser.parse_args()
-
-    if args.type == "rh0":
+    if hdrType == "rh0":
         # We want to go through the router first, then
         # to our receiver, and then we don't care.
         addrs = [
@@ -91,26 +86,41 @@ if __name__ == "__main__":
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562"
         ]
-        pkt = makeRH0(C.senderRecvIp, addrs[:args.size])
+        pkt = makeRH0(C.senderRecvIp, addrs[:size])
     else:
         # Random SIDs. TODO: These will need to be set up correctly.
         sids = [1,2,3,4,5,6,7,8,9,10,11,12]
-        if args.type == "crh16":
-            pkt = makeCRH16(C.senderRecvIp, sids[:args.size])
+        if hdrType == "crh16":
+            pkt = makeCRH16(C.senderRecvIp, sids[:size])
         else:
-            pkt = makeCRH32(C.senderRecvIp, sids[:args.size])
+            pkt = makeCRH32(C.senderRecvIp, sids[:size])
 
-    if args.verbose:
-        print(
-            f"Sending {args.count} {args.type} packet(s) with "
-            f"{args.size} device(s) and an interval of {args.interval}.")
+    print(
+        f"Sending {count * numProcs} {hdrType} packet(s) with "
+        f"{size} device(s) and an interval of {interval}.")
+
+    if verbose:
         print()
         print("---------------\nPACKET FIELDS\n---------------")
         print(ls(pkt))
 
+
+    pSenders = [
+        Process(
+            target=sendp,
+            args=(pkt),
+            kwargs={"count":count, "inter":interval, "iface":C.senderSendIf, "verbose":verbose})
+        for _ in range(numProcs)
+    ]
+
+    # These processes and loops will incur some additional overhead and may affect accurate timing,
+    # TODO: If we can slow down the router CPU enough to overload it with a single process, do that.
+    # Also could use a fixed number of procs to avoid loops.
     start = time()
-    sendp(pkt, count=args.count, inter=args.interval, iface=C.senderSendIf)
+    for p in pSenders:
+        p.start()
+    for p in pSenders:
+        p.join()
     stop = time()
 
-    if args.verbose:
-        print(f"Took {stop - start} seconds (wall clock).")
+    timeToSend.value = stop - start

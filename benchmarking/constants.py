@@ -4,5 +4,3 @@ routerVmIp = "fde4:8dba:82e0::c5"
 
 senderSendIf = "enp0s8"
 senderRecvIf = "enp0s9"
-
-defaultCount = 5
