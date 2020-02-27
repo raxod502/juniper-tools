@@ -35,5 +35,8 @@ if __name__ == "__main__":
     pSend.join()
     pRecv.join()
 
-    print(f"Received {pktsReceived.value} packets.")
+    if pktsReceived:
+        print("Received all packets.")
+    else:
+        print("Did not receive all the packets.")
     print(f"Took {timeToSend.value} seconds (wall clock).")
