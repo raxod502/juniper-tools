@@ -56,6 +56,11 @@ Makefile variables):
   started. If non-empty, then Vagrant is instructed to disable the
   GUIs for the VMs.
 
+**Warning: if you open multiple ttys to run the project, make sure to
+set the same configuration variables in all of them. Otherwise, the
+Makefile won't behave correctly since it will be performing operations
+that would make sense in a different configuration.**
+
 ### Setup
 
 * Run `make vm` to provision all of the VMs.
