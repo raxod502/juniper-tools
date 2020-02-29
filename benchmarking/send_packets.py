@@ -1,5 +1,5 @@
 import logging
-logging.getLogger("scapy.runtime").setLevel(logging.WARNING)
+logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
 from scapy.all import Ether, IPv6, IPv6ExtHdrRouting, UDP, sendp, ls, conf
 from struct import pack
@@ -99,17 +99,17 @@ def runSender(hdrType, size, count, numProcs, interval, verbose):
         f"Sending {count * numProcs} {hdrType} packet(s) with "
         f"{size} device(s) and an interval of {interval}.")
 
-    if verbose:
-        print()
-        print("---------------\nPACKET FIELDS\n---------------")
-        print(ls(pkt))
-
+    # if verbose:
+    #     print()
+    #     print("---------------\nPACKET FIELDS\n---------------")
+    #     print(ls(pkt))
+    #     print()
 
     pSenders = [
         Process(
             target=sendp,
             args=(pkt),
-            kwargs={"count":count, "inter":interval, "iface":C.senderSendIf, "verbose":verbose})
+            kwargs={"count":count, "inter":interval, "iface":C.senderSendIf, "verbose":0})
         for _ in range(numProcs)
     ]
 
