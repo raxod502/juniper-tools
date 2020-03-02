@@ -1,6 +1,13 @@
 ########################################
 ## User-facing Makefile variables
 
+# I suggest customizing these variables by putting e.g. 'ROUTERS=yes'
+# in a '.env' file in this repository.
+
+# https://unix.stackexchange.com/a/348432/176805
+include .env
+export
+
 HEADLESS ?=
 ROUTERS  ?=
 MTU      ?=
@@ -34,12 +41,6 @@ ifeq ($(HOSTNAME),sender)
 	REQUIRE_SENDER :=
 else ifeq ($(HOSTNAME),receiver)
 	REQUIRE_RECEIVER :=
-endif
-
-ifeq (,$(ROUTERS))
-	RECV_IP := 192.168.33.11
-else
-	RECV_IP := 192.168.66.11
 endif
 
 SSH_ARGS := -- -X
@@ -220,8 +221,8 @@ install: ## Install kernel (VM-only)
 	sudo make -C $(LINUX) INSTALL_MOD_STRIP=1 modules_install install -j$$(nproc)
 	@$(MSG)
 
-# The kernel has been installed. You may now want to run 'make
-# reboot<VM>' from the host machine to switch over to the new kernel.
+# The kernel has been installed. You may now want to run 'make reboot
+# [VM=...]' from the host machine to switch over to the new kernel.
 
 ########################################
 ## Editor support
@@ -262,29 +263,18 @@ wireshark: ## Launch Wireshark to inspect VM network traffic (VM-only)
 
 tshark: ## Launch tshark to inspect VM network traffic (VM-only)
 	@$(REQUIRE_VM)
-	@if [ $(HOSTNAME) = sender -o $(HOSTNAME) = receiver ]; then\
-		$(TSHARK) -i enp0s8;									\
-	else														\
-		$(TSHARK) -i enp0s9;									\
-	fi
+	$(TSHARK) -i enp0s8
 
 tcp: ## Initialize TCP connection (VM-only)
 	@$(REQUIRE_VM)
 	@if [ $(HOSTNAME) = receiver ]; then\
 		nc -l 3000;							\
 	elif [ $(HOSTNAME) = sender ]; then					\
-		nc $(RECV_IP) 3000;						\
+		nc 192.168.33.11 3000;						\
 	else									\
 		echo "this can only be run from the sender or receiver" >&2;	\
 		exit 1; 							\
 	fi
-	@$(MSG)
-
-# Once you have initialized the TCP connection on both the sender and
-# receiver, you may now wish to decrease the path MTU using 'make
-# reduce'. (When testing without routers, this should be done on the
-# sender and receiver; when testing with routers, it should be done
-# only on the two routers.)
 
 reduce: ## Reduce the path MTU (VM-only)
 	@make mtu MTU=800
@@ -308,33 +298,28 @@ reset: ## Reset the path MTU to its original value
 
 mtu: ## Set the path MTU to any value (e.g. make mtu MTU=400) (VM-only)
 	@$(REQUIRE_VM)
-	@if [ \( $(HOSTNAME) = receiver -o $(HOSTNAME) = sender \) -a -z $(ROUTERS) ]; then\
-		sudo ip link set mtu $(MTU) dev enp0s8;\
-	elif [ $(HOSTNAME) = sender-router -a -n $(ROUTERS) ]; then\
-		sudo ip link set mtu $(MTU) dev enp0s9;\
-		sleep 3;\
-		sudo route add -net 192.168.66.0/24 gw 192.168.50.200 dev enp0s9;\
-	elif [ $(HOSTNAME) = receiver-router -a -n $(ROUTERS) ]; then\
-		sudo ip link set mtu $(MTU) dev enp0s9;\
-		sleep 3;\
-		sudo route add -net 192.168.33.0/24 gw 192.168.50.101 dev enp0s9;\
-	elif [ -z $(ROUTERS) ]; then \
-		echo "this can only be run from the sender or receiver" >&2;\
-		exit 1;\
-	else\
-		echo "this can only be run from the intermediate routers" >&2;\
-		exit 1;\
+	@if [ \( $(HOSTNAME) = sender -o $(HOSTNAME) = receiver \) -a -n $(ROUTERS) ]; then	\
+		echo "can't change MTU of sender/receiver with routers" >&2;			\
+		exit 1;										\
+	fi
+	sudo ip link set mtu $(MTU) dev enp0s8
+	@if [ $(HOSTNAME) = sender-router ]; then						\
+		sleep 3;									\
+		sudo route add -net 192.168.33.0/24 gw 192.168.50.101 dev enp0s8;		\
+	elif [ $(HOSTNAME) = receiver-router ]; then						\
+		sleep 3;									\
+		sudo route add -net 192.168.66.0/24 gw 192.168.50.100 dev enp0s8;		\
 	fi
 
 check: ## Check the path MTU cache (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
-	ip route get to $(RECV_IP)
+	ip route get to 192.168.33.11
 
 clear: ## Clear the path MTU cache (VM-only, sender-only)
 	@$(REQUIRE_VM)
 	@$(REQUIRE_SENDER)
-	sudo ip route flush cache to $(RECV_IP)
+	sudo ip route flush cache to 192.168.33.11
 	@$(MSG)
 
 # The path MTU cache has been cleared, as you can see by running 'make
@@ -351,3 +336,6 @@ patch: ## Genenerate and show Git diff of all Juniper kernel changes
 	@$(MSG)
 
 # The patch has been saved to 'juniper.patch'.
+
+info:
+	@echo HEADLESS: $(HEADLESS) ROUTERS: $(ROUTERS)

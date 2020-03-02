@@ -56,10 +56,11 @@ Makefile variables):
   started. If non-empty, then Vagrant is instructed to disable the
   GUIs for the VMs.
 
-**Warning: if you open multiple ttys to run the project, make sure to
-set the same configuration variables in all of them. Otherwise, the
-Makefile won't behave correctly since it will be performing operations
-that would make sense in a different configuration.**
+**I recommend setting these environment variables in a file called
+`.env` in the root directory of this repository. You can place lines
+like `ROUTERS=yes`, `HEADLESS=` into it and they will be set
+automatically in the Makefile. If you set the variables manually
+instead, you will have to make sure to do it in every tty!**
 
 ### Setup
 
@@ -95,6 +96,10 @@ that would make sense in a different configuration.**
   the sender and receiver (if testing without routers) or on the two
   routers (if testing with routers). To access the routers, run `make
   ssh VM=(sender-router|receiver-router)`.
+    * *Note that setting the MTU of a link to the same value twice in
+      a row will produce an error, `SIOCADDRT: File exists`. This does
+      not mean things are broken; it just means that the MTU is
+      already set to the desired value.*
 * If desired, open Wireshark using `make wireshark` (or tshark using
   `make tshark`) on the sender.
 * Paste the contents of `packet_data.txt` into the netcat session on
@@ -139,6 +144,35 @@ The virtual machines are accessible locally at virtual IP addresses
 listed in the [`Vagrantfile`](Vagrantfile). You can connect to them
 using SSH, with the default username and password (`vagrant` /
 `vagrant`).
+
+### Virtual network setup
+
+All IP addresses are on the 192.168 prefix (see [RFC
+1918](https://tools.ietf.org/html/rfc1918)).
+
+For testing without routers:
+
+    sender
+    33.10 -->enp8s0
+
+                      receiver
+             enp8s0<-- 33.11
+
+For testing with routers:
+
+    sender
+    66.10 -->enp8s0
+
+                    sender_router
+             enp9s0<-- 66.100
+                       50.100 -->enp8s0
+
+                                       receiver_router
+                                 enp8s0<-- 50.101
+                                           33.101 -->enp9s0
+
+                                                              receiver
+                                                     enp8s0<-- 33.11
 
 ## Compilation cache
 
