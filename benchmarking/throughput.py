@@ -17,9 +17,11 @@ def shouldDrop():
 
 def runTests(args):
     total = 0
+    startInterval = args.interval
     for i in range(args.numTests):
         throughput = runSingleTest(args, i)
-        print(F"Throughput: {throughput}")
+        # Reset the starting interval since we decreased it
+        args.interval = startInterval
         if throughput < 0:
             # TODO: For the real thing, we should just stop altogether
             print("Encountered error. Ignoring this test!", file=stderr)
@@ -107,11 +109,20 @@ if __name__ == "__main__":
         help="The tcpdump buffer size, in KiB.")
     parser.add_argument("-n", "--numTests", type=int, default=5,
         help="The total number of trials to run.")
-    parser.add_argument("-d", "--intervalDecrease", type=float, default=0.001,
+    parser.add_argument("-d", "--intervalDecrease", type=float, default=0.01,
         help="The amount to decrease the interval after each iteration.")
+    parser.add_argument("-S", "--sendOnly", default=False, action="store_true",
+        help="Only send packets.")
     parser.add_argument("-v", "--verbose", default=False, action="store_true",
         help="Print stuff.")
     args = parser.parse_args()
+
+
+    # TODO: Remove this after. Just for you Hakan!
+    if args.sendOnly:
+        runSender(args.type, args.size, args.count, args.processes, args.interval, args.verbose)
+        exit(0)
+
 
     if args.processes > 100:
         response = input(f"You are about to start {args.processes} processes. Continue? (y|n).\n")
