@@ -1,6 +1,13 @@
 ########################################
 ## User-facing Makefile variables
 
+# I suggest customizing these variables by putting e.g. 'ROUTERS=yes'
+# in a '.env' file in this repository.
+
+# https://unix.stackexchange.com/a/348432/176805
+include .env
+export
+
 HEADLESS ?=
 ROUTERS  ?=
 MTU      ?=
@@ -329,3 +336,6 @@ patch: ## Genenerate and show Git diff of all Juniper kernel changes
 	@$(MSG)
 
 # The patch has been saved to 'juniper.patch'.
+
+info:
+	@echo HEADLESS: $(HEADLESS) ROUTERS: $(ROUTERS)

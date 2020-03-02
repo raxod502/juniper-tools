@@ -56,10 +56,11 @@ Makefile variables):
   started. If non-empty, then Vagrant is instructed to disable the
   GUIs for the VMs.
 
-**Warning: if you open multiple ttys to run the project, make sure to
-set the same configuration variables in all of them. Otherwise, the
-Makefile won't behave correctly since it will be performing operations
-that would make sense in a different configuration.**
+**I recommend setting these environment variables in a file called
+`.env` in the root directory of this repository. You can place lines
+like `ROUTERS=yes`, `HEADLESS=` into it and they will be set
+automatically in the Makefile. If you set the variables manually
+instead, you will have to make sure to do it in every tty!**
 
 ### Setup
 
