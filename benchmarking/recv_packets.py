@@ -6,6 +6,8 @@ from subprocess import Popen, DEVNULL
 
 pktsReceived = Value('i', lock=False)
 
+
+# subprocess.run
 def runReceiver(expectedCount, timeoutSec, bufferSize, verbose):
     pktsReceived.value = 1
 
@@ -20,7 +22,6 @@ def runReceiver(expectedCount, timeoutSec, bufferSize, verbose):
     def timeout():
         nonlocal p
         global pktsReceived
-        p.stdout.close()
         p.terminate()
         pktsReceived.value = 0
 

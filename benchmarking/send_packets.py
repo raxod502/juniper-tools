@@ -99,11 +99,6 @@ def runSender(hdrType, size, count, numProcs, interval, verbose):
         f"Sending {count * numProcs} {hdrType} packet(s) with "
         f"{size} device(s) and an interval of {interval}.")
 
-    # if verbose:
-    #     print()
-    #     print("---------------\nPACKET FIELDS\n---------------")
-    #     print(ls(pkt))
-    #     print()
 
     pSenders = [
         Process(
@@ -113,9 +108,7 @@ def runSender(hdrType, size, count, numProcs, interval, verbose):
         for _ in range(numProcs)
     ]
 
-    # These processes and loops will incur some additional overhead and may affect accurate timing,
-    # TODO: If we can slow down the router CPU enough to overload it with a single process, do that.
-    # Also could use a fixed number of procs to avoid loops.
+    # This timing will be awful, but Ron has an IXIA so I'm not really worried about it.
     start = time()
     for p in pSenders:
         p.start()
@@ -124,3 +117,5 @@ def runSender(hdrType, size, count, numProcs, interval, verbose):
     stop = time()
 
     timeToSend.value = stop - start
+    if verbose:
+        print(f"Time to send all packets: {timeToSend.value}")
