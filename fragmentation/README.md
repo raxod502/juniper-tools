@@ -95,6 +95,10 @@ that would make sense in a different configuration.**
   the sender and receiver (if testing without routers) or on the two
   routers (if testing with routers). To access the routers, run `make
   ssh VM=(sender-router|receiver-router)`.
+    * *Note that setting the MTU of a link to the same value twice in
+      a row will produce an error, `SIOCADDRT: File exists`. This does
+      not mean things are broken; it just means that the MTU is
+      already set to the desired value.*
 * If desired, open Wireshark using `make wireshark` (or tshark using
   `make tshark`) on the sender.
 * Paste the contents of `packet_data.txt` into the netcat session on
