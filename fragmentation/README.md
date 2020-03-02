@@ -140,6 +140,35 @@ listed in the [`Vagrantfile`](Vagrantfile). You can connect to them
 using SSH, with the default username and password (`vagrant` /
 `vagrant`).
 
+### Virtual network setup
+
+All IP addresses are on the 192.168 prefix (see [RFC
+1918](https://tools.ietf.org/html/rfc1918)).
+
+For testing without routers:
+
+    sender
+    33.10 -->enp8s0
+
+                      receiver
+             enp8s0<-- 33.11
+
+For testing with routers:
+
+    sender
+    66.10 -->enp8s0
+
+                    sender_router
+             enp9s0<-- 66.100
+                       50.100 -->enp8s0
+
+                                       receiver_router
+                                 enp8s0<-- 50.101
+                                           33.101 -->enp9s0
+
+                                                              receiver
+                                                     enp8s0<-- 33.11
+
 ## Compilation cache
 
 It is recommended that you install [ccache](https://ccache.dev/) and
