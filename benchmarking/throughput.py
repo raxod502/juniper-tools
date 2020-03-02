@@ -17,8 +17,11 @@ def shouldDrop():
 
 def runTests(args):
     total = 0
+    startInterval = args.interval
     for i in range(args.numTests):
         throughput = runSingleTest(args, i)
+        # Reset the starting interval since we decreased it
+        args.interval = startInterval
         if throughput < 0:
             # TODO: For the real thing, we should just stop altogether
             print("Encountered error. Ignoring this test!", file=stderr)
