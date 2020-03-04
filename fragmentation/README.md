@@ -142,11 +142,6 @@ next to the `juniper-tools` repository, this will be visible within
 the VM at `/linux`. Also, the `juniper-tools` repository will be
 visible at `/vagrant`.
 
-As a shorthand for running a `make` command inside `/vagrant`, you can
-use `jmake`. As a shorthand for running a `make` command inside
-`/linux`, you can use `lmake`. This works because the `bin`
-subdirectory of this repository is added to `$PATH` within the VM.
-
 The virtual machines are accessible locally at virtual IP addresses
 listed in the [`Vagrantfile`](Vagrantfile). You can connect to them
 using SSH, with the default username and password (`vagrant` /
