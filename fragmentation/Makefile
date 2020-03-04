@@ -16,12 +16,16 @@ MTU      ?=
 ## Check configuration and environment
 
 ifneq (,$(wildcard /linux))
-	LINUX := /linux
+	LINUX ?= /linux
 else ifneq (,$(wildcard ../../juniper-linux))
-	LINUX := ../../juniper-linux
+	LINUX ?= ../../juniper-linux
 else ifneq (,$(wildcard ../../linux))
-	LINUX := ../../linux
-else
+	LINUX ?= ../../linux
+else ifneq (,$(wildcard /usr/src/linux))
+	LINUX ?= /usr/src/linux
+endif
+
+ifeq (,$(wildcard $(LINUX)))
 $(error linux source repository not available)
 endif
 

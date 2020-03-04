@@ -23,6 +23,12 @@ of two ways:
   (we used v5.2.21 from stable) and apply
   [`juniper.patch`](juniper.patch).
 
+Place the Linux source repository in the same directory as this
+repository, and name it either `linux` or `juniper-linux`.
+Alternatively, if you have some other Linux source repository that
+you'd like to use instead, you can export the `LINUX` environment
+variable to point at it.
+
 Install [Vagrant](https://www.vagrantup.com/):
 
     $ brew cask install vagrant
