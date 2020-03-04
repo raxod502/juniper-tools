@@ -18,10 +18,11 @@ it, IPv4 fragments the packet into smaller pieces which can be sent
 individually and then reassembled at the destination. This ensures
 that packets will be delivered, but it has serious performance
 implications. The main issue is that receiving fragmented packets is
-extremely slow, since expensive operations must be performed to
-reassemble the fragments correctly and since the destination must keep
-all received fragments in memory for a relatively long time until
-either the final fragment is received or until a timeout.
+significantly slower than receiving unfragmented packets, since
+expensive operations must be performed to reassemble the fragments
+correctly and since the destination must keep all received fragments
+in memory for a relatively long time until either the final fragment
+is received or until a timeout.
 
 For this reason, it is desirable to avoid fragmentation.
 
@@ -63,7 +64,7 @@ will notice from the absence of an ACK that its packet was not
 delivered. However, it will not know to split the data into smaller
 packets, so it will fall into an infinite loop sending the same packet
 over and over again. This failure condition is much worse than the
-slightly degraded performance of fragmentation.
+degraded performance of fragmentation.
 
 A final issue with PMTUD is that it is not compatible with all
 protocols. For example, the User Datagram Protocol (UDP) does not have
