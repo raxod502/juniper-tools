@@ -11,16 +11,20 @@
 set -e
 set -o pipefail
 
-if (( $# != 1 )); then
+if (( $# == 0 )); then
+    text="$(cat)"
+elif (( $# == 1 )); then
+    text="$1"
+else
     echo "usage: scripts/box.bash MSG" >&2
     exit 1
-else
-    # Word-wrap paragraphs.
-    #
-    # https://stackoverflow.com/a/7359879/3538165
-    # https://stackoverflow.com/a/16198793/3538165
-    message="$(echo -E "$1" | sed '/./,$!d' | sed '$a\' | fmt -w75)"
 fi
+
+# Word-wrap paragraphs.
+#
+# https://stackoverflow.com/a/7359879/3538165
+# https://stackoverflow.com/a/16198793/3538165
+message="$(echo -E "$text" | sed '/./,$!d' | sed '$a\' | fmt -w75)"
 
 # Compute the length of the longest line.
 length="$(echo -E "$message" | awk '{ print length }' | sort -n | tail -1)"
