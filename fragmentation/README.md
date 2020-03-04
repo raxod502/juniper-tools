@@ -29,14 +29,15 @@ Alternatively, if you have some other Linux source repository that
 you'd like to use instead, you can export the `LINUX` environment
 variable to point at it.
 
-Install [Vagrant](https://www.vagrantup.com/):
+Install [Vagrant](https://www.vagrantup.com/). Here is how to do it on
+macOS, Ubuntu/Debian, and Arch/Manjaro, respectively:
 
     $ brew cask install vagrant
     $ wget -c https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.deb; sudo dpkg -i vagrant_2.2.4_x86_64.deb
     $ sudo pacman -S vagrant
 
-Provided that you have standard development utilities (e.g. Make, GCC,
-etc.), you are ready to go.
+Provided that you have the standard development utilities available
+(e.g. Make, GCC, etc.), you are ready to go.
 
 ## Test procedure
 
@@ -130,7 +131,9 @@ instead, you will have to make sure to do it in every tty!**
 ### Editor configuration
 
 * Run `make cdb` to generate a `compile_commands.json` file for the
-  Linux kernel, for use with C language servers.
+  Linux kernel, for use with C language servers. This requires that
+  you install the [BEAR](https://github.com/rizsotto/Bear) utility,
+  which is not otherwise required for the build.
 * Run `make dirlocals` to generate a `.dir-locals.el` file to
   configure Emacs to edit Linux kernel source with the appropriate
   style settings.
