@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-set -o pipefail
-
 # Word-wrap the given message and display it in an ASCII-art box.
 # E.g.:
 #
@@ -10,6 +7,9 @@ set -o pipefail
 # /               \
 # | Hello, world! |
 # \_______________/
+
+set -e
+set -o pipefail
 
 if (( $# != 1 )); then
     echo "usage: scripts/box.bash MSG" >&2

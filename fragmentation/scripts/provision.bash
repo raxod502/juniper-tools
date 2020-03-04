@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Install the requisite packages into a Vagrant VM, and install our
+# shell profile so that we start in the right working directory.
+
 set -e
 set -o pipefail
 
@@ -34,9 +37,6 @@ apt-get update
 apt-get install -y $(grep -v "^#" <<< "$packages")
 # No need to remove /var/lib/apt/lists as we're not building a Docker
 # image.
-
-# Make SSH allow passing environment variables (e.g. VM).
-sudo sed -i 's/AcceptEnv .*/AcceptEnv */' /etc/ssh/sshd_config
 
 # Try to be idempotent.
 if ! grep "source /vagrant/scripts/profile.bash" /home/vagrant/.bashrc &>/dev/null; then
