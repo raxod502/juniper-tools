@@ -37,14 +37,3 @@ apt-get install -y $(grep -v "^#" <<< "$packages")
 # image.
 
 pip3 install scapy==2.4.3
-
-# Try to be idempotent.
-if ! grep "source /vagrant/scripts/profile.bash" /home/vagrant/.bashrc &>/dev/null; then
-    cat <<"EOF" >> /home/vagrant/.bashrc
-if [ -f /vagrant/scripts/profile.bash ]; then
-    source /vagrant/scripts/profile.bash
-else
-    echo "warning: Juniper shell profile not available" >&2
-fi
-EOF
-fi

@@ -47,8 +47,6 @@ else ifeq ($(HOSTNAME),receiver)
 	REQUIRE_RECEIVER :=
 endif
 
-SSH_ARGS := -- -X
-
 TSHARK := sudo tshark -T fields -e frame.number  -e _ws.col.Source \
 	-e _ws.col.Destination -e _ws.col.Protocol -e icmp.type \
 	-E header=y -e data.len -e _ws.col.Info \
@@ -120,14 +118,14 @@ destroy: ## Destroy VM(s) and associated filesystem(s) (host-only)
 vm: ## Provision and boot one or both VMs (host-only)
 	@$(REQUIRE_HOST)
 	vagrant up $(VM)
-	vagrant ssh $(VM) $(SSH_ARGS)
+	vagrant ssh $(VM)
 	@$(MSG)
 
 # You can SSH back into the machine if you wish with 'make ssh<VM>'.
 
 ssh: ## SSH into one VM (host-only)
 	@$(REQUIRE_HOST)
-	vagrant ssh $(VM) $(SSH_ARGS)
+	vagrant ssh $(VM)
 	@$(MSG)
 
 # You can SSH back into the machine if you wish with 'make ssh<VM>'.
@@ -135,7 +133,7 @@ ssh: ## SSH into one VM (host-only)
 reboot: ## Reboot one or both VMs (host-only)
 	@$(REQUIRE_HOST)
 	vagrant reload $(VM)
-	vagrant ssh $(VM) $(SSH_ARGS)
+	vagrant ssh $(VM)
 	@$(MSG)
 
 # You can SSH back into the machine if you wish with 'make ssh<VM>'.
