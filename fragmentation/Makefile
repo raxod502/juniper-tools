@@ -29,7 +29,7 @@ ifeq (,$(wildcard $(LINUX)))
 $(error linux source repository not available)
 endif
 
-ifneq (,$(wildcard /vagrant))
+ifneq (,$(shell grep "^flags.*hypervisor" /proc/cpuinfo))
 	REQUIRE_VM :=
 	REQUIRE_HOST := echo "This command may only be run from the host." >&2; exit 1
 else
