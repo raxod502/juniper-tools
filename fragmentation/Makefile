@@ -300,7 +300,7 @@ reset: ## Reset the path MTU to its original value
 
 mtu: ## Set the path MTU to any value (e.g. make mtu MTU=400) (VM-only)
 	@$(REQUIRE_VM)
-	@if [ \( $(HOSTNAME) = sender -o $(HOSTNAME) = receiver \) -a -n $(ROUTERS) ]; then	\
+	@if [ \( $(HOSTNAME) = sender -o $(HOSTNAME) = receiver \) -a -n "$(ROUTERS)" ]; then	\
 		echo "Can't change MTU of sender/receiver with routers." >&2;			\
 		exit 1;										\
 	fi
