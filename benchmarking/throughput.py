@@ -3,6 +3,8 @@ from multiprocessing import Process
 from time import sleep
 from random import random
 from sys import stderr
+import os
+import json
 
 from send_packets import runSender, timeToSend
 from recv_packets import runReceiver, pktsReceived
@@ -91,6 +93,24 @@ def runIteration(args, iterNum):
     print(f"Took {timeToSend.value} seconds (wall clock).")
 
 
+def writeJson(filename, hdrType, numDevices, throughput):
+    if os.path.exists(filename):
+        with open(filename) as inFile:
+            data = json.load(inFile)
+    else:
+        data = []
+
+    testResults = {
+        "type" : hdrType,
+        "numEntries" : numDevices,
+        "throughput" : throughput
+    }
+    data.append(testResults)
+
+    with open(filename, "w") as outFile:
+        json.dump(data, outFile)
+
+
 if __name__ == "__main__":
     parser = ArgumentParser("Send RH0 and CRH packets.")
     parser.add_argument("type", choices=["rh0", "crh16", "crh32"],
@@ -111,6 +131,8 @@ if __name__ == "__main__":
         help="The total number of trials to run.")
     parser.add_argument("-d", "--intervalDecrease", type=float, default=0.01,
         help="The amount to decrease the interval after each iteration.")
+    parser.add_argument("-f", "--dataFile", type=str, default="data.json",
+        help="The JSON file to write test results to.")
     parser.add_argument("-S", "--sendOnly", default=False, action="store_true",
         help="Only send packets.")
     parser.add_argument("-v", "--verbose", default=False, action="store_true",
@@ -133,7 +155,7 @@ if __name__ == "__main__":
                 exit(0)
             response = input("Enter \"y\" or \"n\"\n")
 
+    throughput = runTests(args)
+    print(f"\nAvg Throughput: {throughput} packets/second")
 
-    print(f"\nAvg Throughput: {runTests(args)} packets/second")
-
-
+    writeJson(args.dataFile, args.type, args.size, throughput)
