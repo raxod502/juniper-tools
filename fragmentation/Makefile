@@ -31,14 +31,14 @@ endif
 
 ifneq (,$(wildcard /vagrant))
 	REQUIRE_VM :=
-	REQUIRE_HOST := echo "this command may only be run from the host" >&2; exit 1
+	REQUIRE_HOST := echo "This command may only be run from the host." >&2; exit 1
 else
 	REQUIRE_HOST :=
-	REQUIRE_VM := echo "this command may only be run from the VM" >&2; exit 1
+	REQUIRE_VM := echo "This command may only be run from the VM." >&2; exit 1
 endif
 
-REQUIRE_SENDER := echo "this command may only be run from the sender VM" >&2; exit 1
-REQUIRE_RECEIVER := echo "this command may only be run from the receiver VM" >&2; exit 1
+REQUIRE_SENDER := echo "This command may only be run from the sender VM." >&2; exit 1
+REQUIRE_RECEIVER := echo "This command may only be run from the receiver VM." >&2; exit 1
 
 HOSTNAME := $(shell hostname)
 ifeq ($(HOSTNAME),sender)
@@ -276,7 +276,7 @@ tcp: ## Initialize TCP connection (VM-only)
 	elif [ $(HOSTNAME) = sender ]; then					\
 		nc 192.168.33.11 3000;						\
 	else									\
-		echo "this can only be run from the sender or receiver" >&2;	\
+		echo "This can only be run from the sender or receiver." >&2;	\
 		exit 1; 							\
 	fi
 
@@ -303,7 +303,7 @@ reset: ## Reset the path MTU to its original value
 mtu: ## Set the path MTU to any value (e.g. make mtu MTU=400) (VM-only)
 	@$(REQUIRE_VM)
 	@if [ \( $(HOSTNAME) = sender -o $(HOSTNAME) = receiver \) -a -n $(ROUTERS) ]; then	\
-		echo "can't change MTU of sender/receiver with routers" >&2;			\
+		echo "Can't change MTU of sender/receiver with routers." >&2;			\
 		exit 1;										\
 	fi
 	sudo ip link set mtu $(MTU) dev enp0s8
