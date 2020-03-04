@@ -3,24 +3,36 @@
 set -e
 set -o pipefail
 
-if (( $# > 1 )); then
+# Word-wrap the given message and display it in an ASCII-art box.
+# E.g.:
+#
+#  _______________
+# /               \
+# | Hello, world! |
+# \_______________/
+
+if (( $# != 1 )); then
     echo "usage: scripts/box.bash MSG" >&2
     exit 1
-elif (( $# == 1 )); then
+else
+    # Word-wrap paragraphs.
+    #
     # https://stackoverflow.com/a/7359879/3538165
     # https://stackoverflow.com/a/16198793/3538165
     message="$(echo -E "$1" | sed '/./,$!d' | sed '$a\' | fmt -w75)"
-else
-    message="$(cat)"
 fi
 
+# Compute the length of the longest line.
 length="$(echo -E "$message" | awk '{ print length }' | sort -n | tail -1)"
 
+# Get a printf specifier for padding with spaces to that width.
 format="%-${length}s"
 
+# Get a sequence of that many underscores and that many spaces.
+spaces="$(printf "$format" "")"
 underscores="$(printf "$format" "" | sed "s/./_/g")"
-spaces="$(printf "$format" "" | sed "s/./ /g")"
 
+# Make the actual box.
 echo " _${underscores}_ "
 echo "/ ${spaces} \\"
 echo -E "${message}" | while read -r line; do
