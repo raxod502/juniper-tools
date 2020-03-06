@@ -49,12 +49,18 @@ def runSingleTest(args, testNum):
         # Decrease sending interval
         args.interval = args.interval - args.intervalDecrease
         if args.interval < 0:
-            print("Receiver did not drop any packets. Need to send them faster.", file=stderr)
+            print(
+                "Receiver did not drop any packets. Need to send them faster.",
+                file=stderr,
+            )
             return -1
         i += 1
 
     if prevTimeToSend == 0:
-        print("Receiver dropped on the first iteration. Decrease the starting interval.", file=stderr)
+        print(
+            "Receiver dropped on the first iteration. Decrease the starting interval.",
+            file=stderr,
+        )
         return -2
 
     return args.count * args.processes / prevTimeToSend
@@ -69,10 +75,19 @@ def runIteration(args, iterNum):
 
     pSend = Process(
         target=runSender,
-        args=(args.type, args.size, args.count, args.processes, args.interval, args.verbose))
+        args=(
+            args.type,
+            args.size,
+            args.count,
+            args.processes,
+            args.interval,
+            args.verbose,
+        ),
+    )
     pRecv = Process(
         target=runReceiver,
-        args=(args.count * args.processes, args.timeout, args.buffer, args.verbose))
+        args=(args.count * args.processes, args.timeout, args.buffer, args.verbose),
+    )
 
     pRecv.start()
     # Let receiver get started. TODO: Make this better later.
@@ -100,11 +115,7 @@ def writeJson(filename, hdrType, numDevices, throughput):
     else:
         data = []
 
-    testResults = {
-        "type" : hdrType,
-        "numEntries" : numDevices,
-        "throughput" : throughput
-    }
+    testResults = {"type": hdrType, "numEntries": numDevices, "throughput": throughput}
     data.append(testResults)
 
     with open(filename, "w") as outFile:
@@ -113,47 +124,108 @@ def writeJson(filename, hdrType, numDevices, throughput):
 
 if __name__ == "__main__":
     parser = ArgumentParser("Send RH0 and CRH packets.")
-    parser.add_argument("type", choices=["rh0", "crh16", "crh32"],
-        help="Type of routing extension header")
-    parser.add_argument("-s", "--size", type=int, default=5,
-        help="The number of IP addresses in the routing extension header")
-    parser.add_argument("-c", "--count", type=int, default=5,
-        help="The number of packets to send PER SENDER PROCESS.")
-    parser.add_argument("-p", "--processes", type=int, default=10,
-        help="The number of sender processes.")
-    parser.add_argument("-i", "--interval", type=float, default=0,
-        help="The time (in seconds) between sending two packets.")
-    parser.add_argument("-t", "--timeout", type=float, default=10.0,
-        help="The number of seconds to sniff for.")
-    parser.add_argument("-b", "--buffer", type=int, default=131072,
-        help="The tcpdump buffer size, in KiB.")
-    parser.add_argument("-n", "--numTests", type=int, default=5,
-        help="The total number of trials to run.")
-    parser.add_argument("-d", "--intervalDecrease", type=float, default=0.01,
-        help="The amount to decrease the interval after each iteration.")
-    parser.add_argument("-f", "--dataFile", type=str, default="data.json",
-        help="The JSON file to write test results to.")
-    parser.add_argument("-S", "--sendOnly", default=False, action="store_true",
-        help="Only send packets.")
-    parser.add_argument("-v", "--verbose", default=False, action="store_true",
-        help="Print stuff.")
+    parser.add_argument(
+        "type",
+        choices=["rh0", "crh16", "crh32"],
+        help="Type of routing extension header",
+    )
+    parser.add_argument(
+        "-s",
+        "--size",
+        type=int,
+        default=5,
+        help="The number of IP addresses in the routing extension header",
+    )
+    parser.add_argument(
+        "-c",
+        "--count",
+        type=int,
+        default=5,
+        help="The number of packets to send PER SENDER PROCESS.",
+    )
+    parser.add_argument(
+        "-p",
+        "--processes",
+        type=int,
+        default=10,
+        help="The number of sender processes.",
+    )
+    parser.add_argument(
+        "-i",
+        "--interval",
+        type=float,
+        default=0,
+        help="The time (in seconds) between sending two packets.",
+    )
+    parser.add_argument(
+        "-t",
+        "--timeout",
+        type=float,
+        default=10.0,
+        help="The number of seconds to sniff for.",
+    )
+    parser.add_argument(
+        "-b",
+        "--buffer",
+        type=int,
+        default=131072,
+        help="The tcpdump buffer size, in KiB.",
+    )
+    parser.add_argument(
+        "-n",
+        "--numTests",
+        type=int,
+        default=5,
+        help="The total number of trials to run.",
+    )
+    parser.add_argument(
+        "-d",
+        "--intervalDecrease",
+        type=float,
+        default=0.01,
+        help="The amount to decrease the interval after each iteration.",
+    )
+    parser.add_argument(
+        "-f",
+        "--dataFile",
+        type=str,
+        default="data.json",
+        help="The JSON file to write test results to.",
+    )
+    parser.add_argument(
+        "-S",
+        "--sendOnly",
+        default=False,
+        action="store_true",
+        help="Only send packets.",
+    )
+    parser.add_argument(
+        "-v", "--verbose", default=False, action="store_true", help="Print stuff."
+    )
     args = parser.parse_args()
-
 
     # TODO: Remove this after. Just for you Hakan!
     if args.sendOnly:
-        runSender(args.type, args.size, args.count, args.processes, args.interval, args.verbose)
+        runSender(
+            args.type,
+            args.size,
+            args.count,
+            args.processes,
+            args.interval,
+            args.verbose,
+        )
         exit(0)
 
-
     if args.processes > 100:
-        response = input(f"You are about to start {args.processes} processes. Continue? (y|n).\n")
+        response = input(
+            f"You are about to start {args.processes} processes. Continue? (y|n).\n"
+        )
         while True:
             if response == "y":
                 break
             if response == "n":
                 exit(0)
-            response = input("Enter \"y\" or \"n\"\n")
+            response = input('Enter "y" or "n"\n')
 
     throughput = runTests(args)
     print(f"\nAvg Throughput: {throughput} packets/second")
