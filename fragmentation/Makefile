@@ -50,7 +50,7 @@ endif
 TSHARK := sudo tshark -T fields -e frame.number  -e _ws.col.Source \
 	-e _ws.col.Destination -e _ws.col.Protocol -e icmp.type \
 	-E header=y -e data.len -e _ws.col.Info \
-	-f "host $(RECV_IP) and (icmp or tcp or udp)"
+	-f "icmp or tcp or udp"
 
 ########################################
 ## Integrated documentation utilities
