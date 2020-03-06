@@ -127,7 +127,11 @@ Here is an outline of the changes that the patch includes:
 * `net/ipv4/icmp.c`: trigger the same code when receiving ICMP Packet
   Reassembled as when receiving ICMP Destination Unreachable. Handle
   ICMP Packet Reassembled that was triggered by a reassembled ICMP
-  packet.
+  Echo Reply packet.
+* `net/ipv4/ping.c`: trigger the same code when receiving ICMP Packet
+  Reassembled as when receiving ICMP Destination Unreachable. Handle
+  ICMP Packet Reassembled that was triggered by a reassembled ICMP
+  packet of type other than Echo Reply.
 * `net/ipv4/tcp_ipv4`: handle ICMP Packet Reassembled that was
   triggered by a reassembled TCP packet.
 * `net/ipv4/udp.c`: handle ICMP Packet Reassembled that was triggered
