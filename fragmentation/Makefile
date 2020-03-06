@@ -338,6 +338,3 @@ patch: ## Genenerate and show Git diff of all Juniper kernel changes
 	@$(MSG)
 
 # The patch has been saved to 'juniper.patch'.
-
-info:
-	@echo HEADLESS: $(HEADLESS) ROUTERS: $(ROUTERS)
