@@ -88,16 +88,16 @@ help: ## Display this message
 # from one of the VMs.
 #
 # If you want to run tests that use intermediate routers, rather than
-# just the source and destination machines, then you should 'export
-# ROUTERS=yes' first. This is much slower as twice as many VMs must be
-# provisioned, but it shows that the source and destination machines
-# are really relying on ICMP Packet Reassembled rather than peeking at
-# the link MTU directly.
+# just the source and destination machines, then you should put
+# 'ROUTERS=yes' into '.env' first. This is much slower as twice as
+# many VMs must be provisioned, but it shows that the source and
+# destination machines are really relying on ICMP Packet Reassembled
+# rather than peeking at the link MTU directly.
 #
-# If you want to disable the graphical interface on the VMs, and avoid
-# installing Wireshark into them, then you should 'export
-# HEADLESS=yes' first. This is somewhat faster, but reduces
-# debuggability and you won't be able to inspect network traffic.
+# If you want to disable the graphical interface on the VMs, then you
+# should put 'HEADLESS=yes' into '.env' first. This is more
+# convenient, but reduces debuggability in case something goes wrong
+# at boot.
 
 msg: ## Show a post-command message (e.g. make msg CMD=clean)
 	@$(MSG)
