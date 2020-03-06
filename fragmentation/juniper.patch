@@ -59,7 +59,7 @@ index 92b3d2d1139e..76df9aafe32b 100644
  
  static void __net_exit icmp_sk_exit(struct net *net)
 diff --git a/net/ipv4/ip_fragment.c b/net/ipv4/ip_fragment.c
-index cf2b0a6a3337..deb742bf017a 100644
+index cf2b0a6a3337..e5a50d8874d1 100644
 --- a/net/ipv4/ip_fragment.c
 +++ b/net/ipv4/ip_fragment.c
 @@ -404,6 +404,8 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
@@ -71,7 +71,7 @@ index cf2b0a6a3337..deb742bf017a 100644
  
  	ipq_kill(qp);
  
-@@ -449,6 +451,16 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
+@@ -449,6 +451,18 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
  
  	ip_send_check(iph);
  
@@ -83,11 +83,28 @@ index cf2b0a6a3337..deb742bf017a 100644
 +	/* skb has no dst, perform route lookup again */
 +	err = ip_route_input_noref(skb, iph->daddr, iph->saddr,
 +				   iph->tos, skb->dev);
-+	icmp_send(skb, ICMP_PKT_REASM, 0, htonl(icmp_info));
++
++	if (iph->protocol != IPPROTO_ICMP)
++		icmp_send(skb, ICMP_PKT_REASM, 0, htonl(icmp_info));
 +
  	__IP_INC_STATS(net, IPSTATS_MIB_REASMOKS);
  	qp->q.rb_fragments = RB_ROOT;
  	qp->q.fragments_tail = NULL;
+diff --git a/net/ipv4/ping.c b/net/ipv4/ping.c
+index 9d24ef5c5d8f..67d6d83bb33f 100644
+--- a/net/ipv4/ping.c
++++ b/net/ipv4/ping.c
+@@ -536,7 +536,9 @@ void ping_err(struct sk_buff *skb, int offset, u32 info)
+ 			harderr = 1;
+ 			break;
+ 		case ICMP_DEST_UNREACH:
+-			if (code == ICMP_FRAG_NEEDED) { /* Path MTU discovery */
++		case ICMP_PKT_REASM:
++			/* Path MTU discovery */
++			if (type == ICMP_PKT_REASM || code == ICMP_FRAG_NEEDED) {
+ 				ipv4_sk_update_pmtu(skb, sk, info);
+ 				if (inet_sock->pmtudisc != IP_PMTUDISC_DONT) {
+ 					err = EMSGSIZE;
 diff --git a/net/ipv4/raw.c b/net/ipv4/raw.c
 index 40a6abbc9cf6..a6b7a2c2f4a2 100644
 --- a/net/ipv4/raw.c
