@@ -42,7 +42,7 @@ def makeRH0(dstip, addrs):
     rh0.type = 0
     rh0.segleft = 1
     rh0.addresses = addrs
-    rh0.len = len(addrs) * 16  # Payload length in 8-bit units (128/8 = 16)
+    rh0.len = len(addrs) * 2  # Payload length in 8-byte units (128/8 = 16)
 
     # Receiver doesn't process this, but I feel like we should at least be getting an
     # ICMP Parameter Problem message, as per tools.ietf.org/html/rfc5095#section-3
