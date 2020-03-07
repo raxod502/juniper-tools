@@ -22,6 +22,7 @@ def runReceiver(expectedCount, timeoutSec, bufferSize, verbose):
     def timeout():
         nonlocal p
         global pktsReceived
+        print("TIMEOUT!")
         p.terminate()
         pktsReceived.value = 0
 

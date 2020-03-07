@@ -20,7 +20,8 @@ def makePacket(dstip, rthdr):
 
     iphdr = IPv6()
     iphdr.dst = dstip
-    iphdr.nh = 43       # Routing Header
+    # Routing Header = 43, UDP = 17
+    iphdr.nh = 17 if rthdr == "" else 43
 
     udphdr = UDP()
     udphdr.sport = 11111
@@ -29,6 +30,10 @@ def makePacket(dstip, rthdr):
     payload = "$"
 
     return eth / iphdr / rthdr / udphdr / payload
+
+
+def makeRegular(dstip):
+    return makePacket(dstip, "")
 
 
 def makeRH0(dstip, addrs):
@@ -87,6 +92,8 @@ def runSender(hdrType, size, count, numProcs, interval, verbose):
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562"
         ]
         pkt = makeRH0(C.senderRecvIp, addrs[:size])
+    elif hdrType == "reg":
+        pkt = makeRegular(C.senderRecvIp)
     else:
         # Random SIDs. TODO: These will need to be set up correctly.
         sids = [1,2,3,4,5,6,7,8,9,10,11,12]

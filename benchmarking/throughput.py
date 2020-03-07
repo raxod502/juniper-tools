@@ -113,7 +113,7 @@ def writeJson(filename, hdrType, numDevices, throughput):
 
 if __name__ == "__main__":
     parser = ArgumentParser("Send RH0 and CRH packets.")
-    parser.add_argument("type", choices=["rh0", "crh16", "crh32"],
+    parser.add_argument("type", choices=["reg", "rh0", "crh16", "crh32"],
         help="Type of routing extension header")
     parser.add_argument("-s", "--size", type=int, default=5,
         help="The number of IP addresses in the routing extension header")
