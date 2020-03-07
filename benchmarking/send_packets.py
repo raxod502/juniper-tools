@@ -1,4 +1,5 @@
 import logging
+
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
 from scapy.all import Ether, IPv6, IPv6ExtHdrRouting, UDP, sendp, ls, conf
@@ -10,7 +11,7 @@ from multiprocessing import Process, Value
 import constants as C
 
 
-timeToSend = Value('d', lock=False)
+timeToSend = Value("d", lock=False)
 
 
 def makePacket(dstip, rthdr):
@@ -41,7 +42,7 @@ def makeRH0(dstip, addrs):
     rh0.type = 0
     rh0.segleft = 1
     rh0.addresses = addrs
-    rh0.len = len(addrs) * 16 # Payload length in 8-bit units (128/8 = 16)
+    rh0.len = len(addrs) * 16  # Payload length in 8-bit units (128/8 = 16)
 
     # Receiver doesn't process this, but I feel like we should at least be getting an
     # ICMP Parameter Problem message, as per tools.ietf.org/html/rfc5095#section-3
@@ -50,8 +51,8 @@ def makeRH0(dstip, addrs):
 
 def makeCRH16(dstip, sids):
     fmt = "BBBB" + "H" * len(sids)
-    nextHeader = 17        # UDP
-    extLen = len(sids) * 2 # Payload length in 8-bit units (16/8 = 2)
+    nextHeader = 17  # UDP
+    extLen = len(sids) * 2  # Payload length in 8-bit units (16/8 = 2)
     routingType = 5
     segLeft = 1
     crh = pack(fmt, nextHeader, extLen, routingType, segLeft, *sids)
@@ -61,8 +62,8 @@ def makeCRH16(dstip, sids):
 
 def makeCRH32(dstip, sids):
     fmt = "BBBB" + "I" * len(sids)
-    nextHeader = 17        # UDP
-    extLen = len(sids) * 4 # Payload length in 8-bit units (128/32 = 4)
+    nextHeader = 17  # UDP
+    extLen = len(sids) * 4  # Payload length in 8-bit units (128/32 = 4)
     routingType = 6
     segLeft = 1
     crh = pack(fmt, nextHeader, extLen, routingType, segLeft, *sids)
@@ -89,14 +90,14 @@ def runSender(hdrType, size, count, numProcs, interval, verbose):
             "c1ec:8eef:74bf:c76e:1482:ba94:fbea:3090",
             "d2eb:66a0:8af:9f19:21a0:cc0d:ffbe:6ad5",
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
-            "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562"
+            "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562",
         ]
         pkt = makeRH0(C.senderRecvIp, addrs[:size])
     elif hdrType == "reg":
         pkt = makeRegular(C.senderRecvIp)
     else:
         # Random SIDs. TODO: These will need to be set up correctly.
-        sids = [1,2,3,4,5,6,7,8,9,10,11,12]
+        sids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         if hdrType == "crh16":
             pkt = makeCRH16(C.senderRecvIp, sids[:size])
         else:
@@ -104,14 +105,20 @@ def runSender(hdrType, size, count, numProcs, interval, verbose):
 
     print(
         f"Sending {count * numProcs} {hdrType} packet(s) with "
-        f"{size} device(s) and an interval of {interval}.")
-
+        f"{size} device(s) and an interval of {interval}."
+    )
 
     pSenders = [
         Process(
             target=sendp,
             args=(pkt),
-            kwargs={"count":count, "inter":interval, "iface":C.senderSendIf, "verbose":0})
+            kwargs={
+                "count": count,
+                "inter": interval,
+                "iface": C.senderSendIf,
+                "verbose": 0,
+            },
+        )
         for _ in range(numProcs)
     ]
 
