@@ -123,7 +123,7 @@ def writeJson(filename, hdrType, numDevices, throughput):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser("Send RH0 and CRH packets.")
+    parser = ArgumentParser(description="Send RH0 and CRH packets.")
     parser.add_argument(
         "type",
         choices=["rh0", "crh16", "crh32"],
