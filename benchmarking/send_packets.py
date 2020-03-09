@@ -43,12 +43,10 @@ def makeRegular(dstip):
 def makeRH0(dstip, addrs):
     rh0 = IPv6ExtHdrRouting()
     rh0.type = 0
-    rh0.segleft = 1
+    rh0.segleft = len(addrs)
     rh0.addresses = addrs
     rh0.len = len(addrs) * 2  # Payload length in 8-byte units (128/8 = 16)
 
-    # Receiver doesn't process this, but I feel like we should at least be getting an
-    # ICMP Parameter Problem message, as per tools.ietf.org/html/rfc5095#section-3
     return makePacket(dstip, rh0)
 
 
@@ -124,7 +122,6 @@ def runSender(hdrType, size, count, numProcs, interval, verbose, routerVmIp):
         # We want to go through the router first, then
         # to our receiver, and then we don't care.
         addrs = [
-            routerVmIp,
             C.senderRecvIp,
             "b03b:c9d2:bd5d:923e:5adf:9675:e903:27ea",
             "5d45:828f:f53b:e43c:ef68:6991:a9ae:5a9b",
@@ -137,7 +134,7 @@ def runSender(hdrType, size, count, numProcs, interval, verbose, routerVmIp):
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562",
         ]
-        pkt = makeRH0(C.senderRecvIp, addrs[:size])
+        pkt = makeRH0(routerVmIp, addrs[:size])
     elif hdrType == "reg":
         pkt = makeRegular(C.senderRecvIp)
     elif hdrType == "srh":
