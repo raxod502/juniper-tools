@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-DELAY=1
+DELAY=4
 LOSS=20
 tcpdump:
 	sudo tcpdump -t -n -q -K -p -# --direction=in -c 10000 -i enp0s9 -B 131072 ip6 and not icmp6
