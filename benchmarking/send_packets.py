@@ -105,7 +105,7 @@ def makeSRH(dstip, addrs):
         segs.extend(addr.packed)
 
     destIp = ipaddress.IPv6Address(C.senderRecvIp)
-    srcIp = ipaddress.IPv6Address(C.routerVmIp)
+    srcIp = ipaddress.IPv6Address(dstip)
     segs.extend(destIp.packed)
     segs.extend(srcIp.packed)
 
@@ -116,15 +116,15 @@ def makeSRH(dstip, addrs):
     return makePacket(dstip, srh)
 
 
-def runSender(hdrType, size, count, numProcs, interval, verbose):
+def runSender(hdrType, size, count, numProcs, interval, verbose, routerVmIp):
     conf.route6.flush()
-    conf.route6.add(dst=C.senderRecvIp, gw=C.routerVmIp, dev=C.senderSendIf)
+    conf.route6.add(dst=C.senderRecvIp, gw=routerVmIp, dev=C.senderSendIf)
 
     if hdrType == "rh0":
         # We want to go through the router first, then
         # to our receiver, and then we don't care.
         addrs = [
-            C.routerVmIp,
+            routerVmIp,
             C.senderRecvIp,
             "b03b:c9d2:bd5d:923e:5adf:9675:e903:27ea",
             "5d45:828f:f53b:e43c:ef68:6991:a9ae:5a9b",
@@ -154,14 +154,14 @@ def runSender(hdrType, size, count, numProcs, interval, verbose):
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562",
         ]
-        pkt = makeSRH(C.routerVmIp, addrs[: (size - 2)])
+        pkt = makeSRH(routerVmIp, addrs[: (size - 2)])
     else:
         # Random SIDs. TODO: These will need to be set up correctly.
         sids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         if hdrType == "crh16":
-            pkt = makeCRH16(C.routerVmIp, sids[:size])
+            pkt = makeCRH16(routerVmIp, sids[:size])
         else:
-            pkt = makeCRH32(C.routerVmIp, sids[:size])
+            pkt = makeCRH32(routerVmIp, sids[:size])
 
     print(
         f"Sending {count * numProcs} {hdrType} packet(s) with "

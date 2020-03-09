@@ -82,6 +82,7 @@ def runIteration(args, iterNum):
             args.processes,
             args.interval,
             args.verbose,
+            args.routerVmIp,
         ),
     )
     pRecv = Process(
@@ -128,6 +129,9 @@ if __name__ == "__main__":
         "type",
         choices=["reg", "srh", "rh0", "crh16", "crh32"],
         help="Type of routing extension header",
+    )
+    parser.add_argument(
+        "-m", "--machine", choices=["rh0", "crh"], help="Which VM to send to"
     )
     parser.add_argument(
         "-s",
@@ -204,17 +208,18 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # TODO: Remove this after. Just for you Hakan!
-    if args.sendOnly:
-        runSender(
-            args.type,
-            args.size,
-            args.count,
-            args.processes,
-            args.interval,
-            args.verbose,
-        )
-        exit(0)
+    if not args.machine:
+        if args.type == "rh0":
+            args.machine = "rh0"
+        else:
+            args.machine = "crh"
+
+    if args.machine == "rh0":
+        args.routerVmIp = "fde4:8dba:82e0::c6"
+    elif args.machine == "crh":
+        args.routerVmIp = "fde4:8dba:82e0::c5"
+    else:
+        assert False, f"bad machine: {args.machine}"
 
     if args.processes > 100:
         response = input(
@@ -226,6 +231,18 @@ if __name__ == "__main__":
             if response == "n":
                 exit(0)
             response = input('Enter "y" or "n"\n')
+
+    # TODO: Remove this after. Just for you Hakan!
+    if args.sendOnly:
+        runSender(
+            args.type,
+            args.size,
+            args.count,
+            args.processes,
+            args.interval,
+            args.verbose,
+        )
+        exit(0)
 
     throughput = runTests(args)
     print(f"\nAvg Throughput: {throughput} packets/second")
