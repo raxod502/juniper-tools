@@ -10,9 +10,9 @@ types = []
 numEntries = []
 throughputs = []
 for result in results:
-    types += [result['type']]
-    numEntries += [result['numEntries']]
-    throughputs += [result['throughput']]
+    types += [result["type"]]
+    numEntries += [result["numEntries"]]
+    throughputs += [result["throughput"]]
 
 format_throughputs = []
 for index in range(1, 101):
@@ -24,5 +24,5 @@ for index in range(1, 101):
 
 line_chart = pygal.Line()
 line_chart.x_labels = map(str, range(1, 101))
-line_chart.add('line', format_throughputs)
-line_chart.render_to_file('throughput.svg')
+line_chart.add("line", format_throughputs)
+line_chart.render_to_file("throughput.svg")
