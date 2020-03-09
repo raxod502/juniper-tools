@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from argparse import ArgumentParser
 from multiprocessing import Process
 from time import sleep
@@ -5,6 +7,7 @@ from random import random
 from sys import stderr
 import os
 import json
+import sys
 
 from send_packets import runSender, timeToSend
 from recv_packets import runReceiver, pktsReceived
@@ -231,6 +234,10 @@ if __name__ == "__main__":
             if response == "n":
                 exit(0)
             response = input('Enter "y" or "n"\n')
+
+    # Automatically re-run with sudo if needed.
+    if os.geteuid() != 0:
+        os.execlp("sudo", "throughput.py", os.path.realpath(__file__), *sys.argv[1:])
 
     # TODO: Remove this after. Just for you Hakan!
     if args.sendOnly:
