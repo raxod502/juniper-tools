@@ -42,7 +42,7 @@ def makeRH0(dstip, addrs):
     rh0.type = 0
     rh0.segleft = 1
     rh0.addresses = addrs
-    rh0.len = len(addrs) * 16  # Payload length in 8-bit units (128/8 = 16)
+    rh0.len = len(addrs) * 2  # Payload length in 8-byte units (128/8 = 16)
 
     # Receiver doesn't process this, but I feel like we should at least be getting an
     # ICMP Parameter Problem message, as per tools.ietf.org/html/rfc5095#section-3
@@ -50,9 +50,16 @@ def makeRH0(dstip, addrs):
 
 
 def makeCRH16(dstip, sids):
-    fmt = "BBBB" + "H" * len(sids)
+    fmt = "!BBBB" + "H" * len(sids)
     nextHeader = 17  # UDP
-    extLen = len(sids) * 2  # Payload length in 8-bit units (16/8 = 2)
+    byteLen = 4 + len(sids) * 2  # length of header in bytes before padding
+    extLen = (byteLen - 1) // 8  # length of header in 8 byte units
+
+    bytesToFill = 8 * (extLen + 1) - byteLen  # need to pad the rest
+    fmt += "B" * bytesToFill
+    for i in range(bytesToFill):
+        sids.append(0)
+
     routingType = 5
     segLeft = 1
     crh = pack(fmt, nextHeader, extLen, routingType, segLeft, *sids)
@@ -61,9 +68,16 @@ def makeCRH16(dstip, sids):
 
 
 def makeCRH32(dstip, sids):
-    fmt = "BBBB" + "I" * len(sids)
+    fmt = "!BBBB" + "I" * len(sids)
     nextHeader = 17  # UDP
-    extLen = len(sids) * 4  # Payload length in 8-bit units (128/32 = 4)
+    byteLen = 4 + len(sids) * 4  # length of header in bytes before padding
+    extLen = (byteLen - 1) // 8  # length of header in 8 byte units
+
+    bytesToFill = 8 * (extLen + 1) - byteLen  # need to pad the rest
+    fmt += "B" * bytesToFill
+    for i in range(bytesToFill):
+        sids.append(0)
+
     routingType = 6
     segLeft = 1
     crh = pack(fmt, nextHeader, extLen, routingType, segLeft, *sids)
