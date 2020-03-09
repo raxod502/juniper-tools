@@ -14,7 +14,7 @@ import constants as C
 # TODO: REMOVE THIS WHEN WE FIGURE OUT HOW TO DROP PACKETS
 def shouldDrop():
     """Artificially drop packets."""
-    return random() < 0.3
+    return random() < 0
 
 
 def runTests(args):
