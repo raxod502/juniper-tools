@@ -10,6 +10,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider "virtualbox" do |v|
     v.gui = false
+    # https://github.com/joelhandwell/ubuntu_vagrant_boxes/issues/1#issuecomment-292370353
+    v.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
   end
 
   # Unclear why this needs to be global, but if I configure it for
