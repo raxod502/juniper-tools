@@ -40,9 +40,28 @@ Vagrant.configure("2") do |config|
       vb.customize ["modifyvm", :id, "--cpus", "1", "--cpuexecutioncap", "20"]
     end
 
-    rh0.vm.network "private_network", type: "static6", ip: "fde4:8dba:82e0::c5", netmask: "64", mac: "080027e4a82f", virtualbox__intnet: "nw0"
-    rh0.vm.network "private_network", type: "static6", ip: "fde4:8dba:82e1::c5", netmask: "64", virtualbox__intnet: "nw1"
+    rh0.vm.network "private_network", type: "static6", ip: "fde4:8dba:82e0::c6", netmask: "64", mac: "080027e4a82e", virtualbox__intnet: "nw0"
+    rh0.vm.network "private_network", type: "static6", ip: "fde4:8dba:82e1::c6", netmask: "64", virtualbox__intnet: "nw1"
 
     rh0.vm.provision "shell", run: "always", inline: "sudo sysctl -w net.ipv6.conf.all.forwarding=1"
+  end
+
+  config.vm.define "crh" do |crh|
+    crh.vm.box = "crh"
+    crh.vm.synced_folder ".", "/vagrant", disabled: true
+
+    crh.vm.network "private_network", ip: "fde4:8dba:82e0::c5", netmask: "64", mac: "080027e4a82f", virtualbox__intnet: "nw0"
+    crh.vm.network "private_network", ip: "fde4:8dba:82e1::c5", netmask: "64", virtualbox__intnet: "nw1"
+    crh.vm.hostname = "crh"
+
+    crh.vm.provision "shell", run: "always", inline: "sudo sysctl -w net.ipv6.conf.all.forwarding=1"
+    crh.vm.provision "shell", run: "always", inline: "sudo sysctl net.ipv6.conf.enp0s8.seg6_enabled=1"
+    crh.vm.provision "shell", run: "always", inline: "sudo sysctl net.ipv6.conf.enp0s9.seg6_enabled=1"
+    crh.vm.provision "shell", run: "always", inline: "sudo sysctl net.ipv6.conf.all.seg6_enabled=1"
+    crh.vm.provision "shell", run: "always", inline: "sudo /home/vagrant/ip sr map set 1 fde4:8dba:82e1::c4"
+
+    crh.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--cpus", "1", "--cpuexecutioncap", "20"]
+    end
   end
 end
