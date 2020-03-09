@@ -2,34 +2,66 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vagrant.plugins = ["vagrant-disksize", "vagrant-vbguest"]
+  config.vagrant.plugins = ["vagrant-disksize"]
+
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
 
   config.vm.provider "virtualbox" do |v|
     v.gui = false
   end
 
+  # Unclear why this needs to be global, but if I configure it for
+  # just the rh0 VM it doesn't take effect.
+  config.ssh.sudo_command = "sudo -H %c"
+
   config.vm.define "sender", primary: true do |sender|
-    sender.vm.network "private_network", ip: "fde4:8dba:82e0::c4", netmask: "64", virtualbox__intnet: "nw0"
-    sender.vm.network "private_network", ip: "fde4:8dba:82e1::c4", netmask: "64", virtualbox__intnet: "nw1"
+    sender.vm.box = "ubuntu/bionic64"
     sender.vm.hostname = "sender"
+
     sender.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--cpus", "4"]
     end
+
+    sender.vm.network "private_network", ip: "fde4:8dba:82e0::c4", netmask: "64", virtualbox__intnet: "nw0"
+    sender.vm.network "private_network", ip: "fde4:8dba:82e1::c4", netmask: "64", virtualbox__intnet: "nw1"
+
+    sender.vm.provision :shell, path: "scripts/provision.bash"
   end
 
-  config.vm.define "router" do |router|
-    router.vm.network "private_network", ip: "fde4:8dba:82e0::c5", netmask: "64", mac: "080027e4a82f", virtualbox__intnet: "nw0"
-    router.vm.network "private_network", ip: "fde4:8dba:82e1::c5", netmask: "64", virtualbox__intnet: "nw1"
-    router.vm.hostname = "router"
-    router.vm.provision "shell", run: "always", inline: "sudo sysctl -w net.ipv6.conf.all.forwarding=1"
-    router.vm.provider :virtualbox do |vb|
+  config.vm.define "rh0" do |rh0|
+    rh0.vm.box = "ubuntu6v4"
+    # Don't set hostname, it causes bizarre network configuration
+    # error with sudo, see
+    # <https://bugs.launchpad.net/ubuntu/+source/sudo/+bug/32906>.
+
+    rh0.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--cpus", "1", "--cpuexecutioncap", "20"]
+    end
+
+    rh0.vm.network "private_network", type: "static6", ip: "fde4:8dba:82e0::c6", netmask: "64", mac: "080027e4a82e", virtualbox__intnet: "nw0"
+    rh0.vm.network "private_network", type: "static6", ip: "fde4:8dba:82e1::c6", netmask: "64", virtualbox__intnet: "nw1"
+
+    rh0.vm.provision "shell", run: "always", inline: "sudo sysctl -w net.ipv6.conf.all.forwarding=1"
+  end
+
+  config.vm.define "crh" do |crh|
+    crh.vm.box = "crh"
+    crh.vm.synced_folder ".", "/vagrant", disabled: true
+
+    crh.vm.network "private_network", ip: "fde4:8dba:82e0::c5", netmask: "64", mac: "080027e4a82f", virtualbox__intnet: "nw0"
+    crh.vm.network "private_network", ip: "fde4:8dba:82e1::c5", netmask: "64", virtualbox__intnet: "nw1"
+    crh.vm.hostname = "crh"
+
+    crh.vm.provision "shell", run: "always", inline: "sudo sysctl -w net.ipv6.conf.all.forwarding=1"
+    crh.vm.provision "shell", run: "always", inline: "sudo sysctl net.ipv6.conf.enp0s8.seg6_enabled=1"
+    crh.vm.provision "shell", run: "always", inline: "sudo sysctl net.ipv6.conf.enp0s9.seg6_enabled=1"
+    crh.vm.provision "shell", run: "always", inline: "sudo sysctl net.ipv6.conf.all.seg6_enabled=1"
+    crh.vm.provision "shell", run: "always", inline: "sudo /home/vagrant/ip sr map set 1 fde4:8dba:82e1::c4"
+
+    crh.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--cpus", "1", "--cpuexecutioncap", "20"]
     end
   end
-
-  config.vm.box = "ubuntu/bionic64"
-  config.disksize.size = '50GB'
-
-  config.vm.provision :shell, path: "scripts/provision.bash"
-
 end
