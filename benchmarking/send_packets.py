@@ -1,4 +1,5 @@
 import logging
+import ipaddress
 
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
@@ -21,7 +22,10 @@ def makePacket(dstip, rthdr):
 
     iphdr = IPv6()
     iphdr.dst = dstip
-    iphdr.nh = 43  # Routing Header
+    # this is necessary for srh
+    iphdr.src = C.senderSendIp
+    # Routing Header = 43, UDP = 17
+    iphdr.nh = 17 if rthdr == "" else 43
 
     udphdr = UDP()
     udphdr.sport = 11111
@@ -32,12 +36,16 @@ def makePacket(dstip, rthdr):
     return eth / iphdr / rthdr / udphdr / payload
 
 
+def makeRegular(dstip):
+    return makePacket(dstip, "")
+
+
 def makeRH0(dstip, addrs):
     rh0 = IPv6ExtHdrRouting()
     rh0.type = 0
     rh0.segleft = 1
     rh0.addresses = addrs
-    rh0.len = len(addrs) * 16  # Payload length in 8-bit units (128/8 = 16)
+    rh0.len = len(addrs) * 2  # Payload length in 8-byte units (128/8 = 16)
 
     # Receiver doesn't process this, but I feel like we should at least be getting an
     # ICMP Parameter Problem message, as per tools.ietf.org/html/rfc5095#section-3
@@ -45,9 +53,16 @@ def makeRH0(dstip, addrs):
 
 
 def makeCRH16(dstip, sids):
-    fmt = "BBBB" + "H" * len(sids)
+    fmt = "!BBBB" + "H" * len(sids)
     nextHeader = 17  # UDP
-    extLen = len(sids) * 2  # Payload length in 8-bit units (16/8 = 2)
+    byteLen = 4 + len(sids) * 2  # length of header in bytes before padding
+    extLen = (byteLen - 1) // 8  # length of header in 8 byte units
+
+    bytesToFill = 8 * (extLen + 1) - byteLen  # need to pad the rest
+    fmt += "B" * bytesToFill
+    for i in range(bytesToFill):
+        sids.append(0)
+
     routingType = 5
     segLeft = 1
     crh = pack(fmt, nextHeader, extLen, routingType, segLeft, *sids)
@@ -56,14 +71,49 @@ def makeCRH16(dstip, sids):
 
 
 def makeCRH32(dstip, sids):
-    fmt = "BBBB" + "I" * len(sids)
+    fmt = "!BBBB" + "I" * len(sids)
     nextHeader = 17  # UDP
-    extLen = len(sids) * 4  # Payload length in 8-bit units (128/32 = 4)
+    byteLen = 4 + len(sids) * 4  # length of header in bytes before padding
+    extLen = (byteLen - 1) // 8  # length of header in 8 byte units
+
+    bytesToFill = 8 * (extLen + 1) - byteLen  # need to pad the rest
+    fmt += "B" * bytesToFill
+    for i in range(bytesToFill):
+        sids.append(0)
+
     routingType = 6
     segLeft = 1
     crh = pack(fmt, nextHeader, extLen, routingType, segLeft, *sids)
 
     return makePacket(dstip, crh)
+
+
+def makeSRH(dstip, addrs):
+    fmt = "BBBB" + "BBH" + str((len(addrs) + 2) * 16) + "s"
+
+    nextHeader = 17  # UDP
+    extLen = (len(addrs) + 2) * 2  # length of header in bytes
+    routingType = 4
+    segLeft = len(addrs) + 1
+    firstSeg = len(addrs) + 1
+    flags = 0
+    reserved = 0
+
+    segs = bytearray()
+    for i in range(len(addrs)):
+        addr = ipaddress.IPv6Address(addrs[i])
+        segs.extend(addr.packed)
+
+    destIp = ipaddress.IPv6Address(C.senderRecvIp)
+    srcIp = ipaddress.IPv6Address(C.routerVmIp)
+    segs.extend(destIp.packed)
+    segs.extend(srcIp.packed)
+
+    srh = pack(
+        fmt, nextHeader, extLen, routingType, segLeft, firstSeg, flags, reserved, segs,
+    )
+
+    return makePacket(dstip, srh)
 
 
 def runSender(hdrType, size, count, numProcs, interval, verbose):
@@ -88,13 +138,30 @@ def runSender(hdrType, size, count, numProcs, interval, verbose):
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562",
         ]
         pkt = makeRH0(C.senderRecvIp, addrs[:size])
+    elif hdrType == "reg":
+        pkt = makeRegular(C.senderRecvIp)
+    elif hdrType == "srh":
+        addrs = [
+            # we add the sender destination address later
+            "b03b:c9d2:bd5d:923e:5adf:9675:e903:27ea",
+            "5d45:828f:f53b:e43c:ef68:6991:a9ae:5a9b",
+            "6374:f8d4:e316:fc7c:279b:5884:fd9e:ddf4",
+            "5284:b7c6:4928:8a51:47bf:3e0d:9cbd:2a50",
+            "e290:1cbc:2b0a:c51c:38d8:f510:70b3:fd3f",
+            "ed63:2a78:7311:1d4d:f759:c6e9:cf84:e586",
+            "c1ec:8eef:74bf:c76e:1482:ba94:fbea:3090",
+            "d2eb:66a0:8af:9f19:21a0:cc0d:ffbe:6ad5",
+            "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
+            "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562",
+        ]
+        pkt = makeSRH(C.routerVmIp, addrs[: (size - 2)])
     else:
         # Random SIDs. TODO: These will need to be set up correctly.
         sids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         if hdrType == "crh16":
-            pkt = makeCRH16(C.senderRecvIp, sids[:size])
+            pkt = makeCRH16(C.routerVmIp, sids[:size])
         else:
-            pkt = makeCRH32(C.senderRecvIp, sids[:size])
+            pkt = makeCRH32(C.routerVmIp, sids[:size])
 
     print(
         f"Sending {count * numProcs} {hdrType} packet(s) with "

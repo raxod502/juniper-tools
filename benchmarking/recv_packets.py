@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
 from threading import Timer
 from multiprocessing import Process, Value
-from subprocess import Popen, DEVNULL
 
+import sys
+import subprocess
 
 pktsReceived = Value("i", lock=False)
 
@@ -11,38 +12,33 @@ pktsReceived = Value("i", lock=False)
 def runReceiver(expectedCount, timeoutSec, bufferSize, verbose):
     pktsReceived.value = 1
 
-    fd = None if verbose else DEVNULL
-
-    p = Popen(
-        (
-            "sudo",
-            "tcpdump",
-            "-l",
-            "-c",
-            str(expectedCount),
-            "-#",
-            "-t",
-            "-n",
-            "-q",
-            "-K",
-            "-p",
-            "-Q",
-            "in",
-            "-B",
-            str(bufferSize),
-            "-i",
-            "enp0s9",
-            "ip6 and not icmp6",
-        ),
-        stderr=fd,
-        stdout=DEVNULL,
-    )
-
-    def timeout():
-        nonlocal p
-        global pktsReceived
-        p.terminate()
+    try:
+        p = subprocess.run(
+            (
+                "sudo",
+                "tcpdump",
+                "-l",
+                "-c",
+                str(expectedCount),
+                "-t",
+                "-n",
+                "-q",
+                "-K",
+                "-p",
+                "-Q",
+                "in",
+                "-B",
+                str(bufferSize),
+                "-i",
+                "enp0s9",
+                "ip6 and not icmp6",
+            ),
+            # Cannot use PIPE with timeout :(
+            stderr=None,
+            stdout=subprocess.DEVNULL,
+            timeout=timeoutSec,
+        )
+    except subprocess.TimeoutExpired as p:
         pktsReceived.value = 0
 
-    Timer(timeoutSec, timeout).start()
-    p.wait()
+    sys.stderr.flush() # Sometimes it gets stuck, idk why
