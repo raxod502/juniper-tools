@@ -1,5 +1,6 @@
+*.log
 .vagrant
 .vscode
 __pycache__
-*.json
-*.log
+
+/data.json
