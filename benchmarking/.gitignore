@@ -1,4 +1,5 @@
 *.log
+*.svg
 .vagrant
 .vscode
 __pycache__
