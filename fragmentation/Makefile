@@ -287,7 +287,7 @@ reduce: ## Reduce the path MTU (VM-only)
 # routers), you may wish to send a large packet by pasting the
 # contents of 'packet_data.txt' into netcat on the sender. To inspect
 # network traffic when you do this, you may wish to run 'make
-# wireshark' first, provided you are not running in headless mode.
+# wireshark' first.
 
 reset: ## Reset the path MTU to its original value
 	@make mtu MTU=1500
