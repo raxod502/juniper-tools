@@ -61,7 +61,7 @@ def runSingleTest(args, testNum):
 
     if prevTimeToSend == 0:
         print(
-            "Receiver dropped on the first iteration. Decrease the starting interval.",
+            "Receiver dropped on the first iteration. Increase the starting interval.",
             file=stderr,
         )
         return -2
@@ -161,7 +161,7 @@ if __name__ == "__main__":
         "-i",
         "--interval",
         type=float,
-        default=0,
+        default=0.1,
         help="The time (in seconds) between sending two packets.",
     )
     parser.add_argument(
