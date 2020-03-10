@@ -69,5 +69,7 @@ Vagrant.configure("2") do |config|
     crh.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--cpus", "1", "--cpuexecutioncap", "20"]
     end
+
+    crh.ssh.extra_args = ["-X", "-t", "cd /vagrant; bash --login"]
   end
 end
