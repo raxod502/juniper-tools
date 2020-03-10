@@ -52,7 +52,6 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "crh" do |crh|
     crh.vm.box = "crhv2"
-    crh.vm.synced_folder ".", "/vagrant", disabled: true
 
     crh.vm.network "private_network", ip: "fde4:8dba:82e0::c5", netmask: "64", mac: "080027e4a82f", virtualbox__intnet: "nw0"
     crh.vm.network "private_network", ip: "fde4:8dba:82e1::c5", netmask: "64", virtualbox__intnet: "nw1"
