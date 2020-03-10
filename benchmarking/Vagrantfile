@@ -12,10 +12,14 @@ Vagrant.configure("2") do |config|
     sender.vm.network "private_network", ip: "fde4:8dba:82e0::c4", netmask: "64", virtualbox__intnet: "nw0"
     sender.vm.network "private_network", ip: "fde4:8dba:82e1::c4", netmask: "64", virtualbox__intnet: "nw1"
     sender.vm.hostname = "sender"
+    sender.vm.provision "shell", inline: "ssh-keygen -t rsa; sudo ssh-copy-id vagrant@fde4:8dba:82e0::c5"
     sender.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--cpus", "4"]
     end
   end
+
+
+
 
   config.vm.define "router" do |router|
     router.vm.network "private_network", ip: "fde4:8dba:82e0::c5", netmask: "64", mac: "080027e4a82f", virtualbox__intnet: "nw0"
