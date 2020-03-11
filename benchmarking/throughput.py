@@ -42,7 +42,7 @@ def runSingleTest(args, testNum):
     print(f"\n----------------")
     print(f"- Test #{testNum}")
     print(f"----------------")
-    resetDelay(args.delay)
+    # resetDelay(args.delay)
     i = 0
     prevTimeToSend = 0
     while runIteration(args, i):
