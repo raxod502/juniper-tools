@@ -12,12 +12,6 @@ from recv_packets import runReceiver, pktsReceived
 import constants as C
 
 
-# TODO: REMOVE THIS WHEN WE FIGURE OUT HOW TO DROP PACKETS
-# def shouldDrop():
-#     """Artificially drop packets."""
-#     return random() < 0
-
-
 def runTests(args):
     total = 0
     startInterval = args.interval
@@ -42,7 +36,6 @@ def runSingleTest(args, testNum):
     print(f"\n----------------")
     print(f"- Test #{testNum}")
     print(f"----------------")
-    # resetDelay(args.delay)
     i = 0
     prevTimeToSend = 0
     while runIteration(args, i):
@@ -66,12 +59,6 @@ def runSingleTest(args, testNum):
         return -2
 
     return args.count * args.processes / prevTimeToSend
-
-
-def resetDelay(delay):
-    cmd = "ssh -i /home/vagrant/.ssh/id_rsa vagrant@" + C.routerVmIp +  " sudo tc qdisc delete dev enp0s9 root netem delay 4s;" \
-        "sudo tc qdisc add dev enp0s9 root netem delay " + str(delay) + "s"
-    subprocess.run(cmd.split())
 
 
 def runIteration(args, iterNum):
@@ -104,9 +91,6 @@ def runIteration(args, iterNum):
     pSend.join()
     pRecv.join()
 
-    # if shouldDrop():
-    #     print("Artificially dropped packets.")
-    #     return False
     if pktsReceived.value:
         print("Received all packets.")
         return True

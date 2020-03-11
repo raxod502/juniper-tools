@@ -17,6 +17,7 @@ rxtx:
 	@ifconfig | egrep "enp0s8" -A 7 | egrep "enp0s8|RX"
 	@ifconfig | egrep "enp0s9" -A 7 | egrep "enp0s9|TX"
 
+# https://linux.die.net/man/8/tc-tbf
 limit:
 	sudo tc qdisc change dev enp0s9 root tbf rate $(RATE)kbit limit $(LIMIT) buffer $(BUF) \
 	|| sudo tc qdisc add dev enp0s9 root tbf rate $(RATE)kbit limit $(LIMIT) buffer $(BUF)
