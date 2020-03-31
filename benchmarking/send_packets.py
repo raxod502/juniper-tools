@@ -164,7 +164,7 @@ def runSender(
 
     print(
         f"Sending {count * numProcs} {hdrType} packet(s) with "
-        f"{size} device(s) and an interval of {interval}."
+        f"{size} device(s) and an interval of {interval:.3f}."
     )
 
     pSenders = [

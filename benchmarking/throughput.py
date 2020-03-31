@@ -14,12 +14,6 @@ from recv_packets import runReceiver, pktsReceived
 import constants as C
 
 
-# TODO: REMOVE THIS WHEN WE FIGURE OUT HOW TO DROP PACKETS
-def shouldDrop():
-    """Artificially drop packets."""
-    return random() < 0
-
-
 def runTests(args):
     total = 0
     startInterval = args.interval
@@ -61,7 +55,7 @@ def runSingleTest(args, testNum):
 
     if prevTimeToSend == 0:
         print(
-            "Receiver dropped on the first iteration. Decrease the starting interval.",
+            "Receiver dropped on the first iteration. Increase the starting interval.",
             file=stderr,
         )
         return -2
@@ -101,16 +95,12 @@ def runIteration(args, iterNum):
     pSend.join()
     pRecv.join()
 
-    if shouldDrop():
-        print("Artificially dropped packets.")
-        return False
-    elif pktsReceived.value:
+    if pktsReceived.value:
         print("Received all packets.")
         return True
     else:
         print("Did not receive all the packets.")
         return False
-    print(f"Took {timeToSend.value} seconds (wall clock).")
 
 
 def writeJson(filename, hdrType, numDevices, throughput):
@@ -162,7 +152,7 @@ if __name__ == "__main__":
         "-i",
         "--interval",
         type=float,
-        default=0,
+        default=0.1,
         help="The time (in seconds) between sending two packets.",
     )
     parser.add_argument(

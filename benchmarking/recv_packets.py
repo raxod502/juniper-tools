@@ -38,7 +38,7 @@ def runReceiver(expectedCount, timeoutSec, bufferSize, verbose):
             stdout=subprocess.DEVNULL,
             timeout=timeoutSec,
         )
-    except subprocess.TimeoutExpired as p:
+    except subprocess.TimeoutExpired:
         pktsReceived.value = 0
 
     sys.stderr.flush() # Sometimes it gets stuck, idk why
