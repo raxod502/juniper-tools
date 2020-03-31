@@ -86,6 +86,7 @@ def runIteration(args, iterNum):
             args.interval,
             args.verbose,
             args.routerVmIp,
+            args.routerVmEth
         ),
     )
     pRecv = Process(
@@ -219,8 +220,10 @@ if __name__ == "__main__":
 
     if args.machine == "rh0":
         args.routerVmIp = "fde4:8dba:82e0::c6"
+        args.routerVmEth = "08:00:27:e4:a8:2e"
     elif args.machine == "crh":
         args.routerVmIp = "fde4:8dba:82e0::c5"
+        args.routerVmEth = "08:00:27:e4:a8:2f"
     else:
         assert False, f"bad machine: {args.machine}"
 

@@ -15,10 +15,10 @@ import constants as C
 timeToSend = Value("d", lock=False)
 
 
-def makePacket(dstip, rthdr):
+def makePacket(dstip, ethaddr, rthdr):
     # MAC address of router interface on senderSend private network.
     # Don't know why Scapy can't figure this out on its own.
-    eth = Ether(dst="08:00:27:e4:a8:2f")
+    eth = Ether(dst=ethaddr)
 
     iphdr = IPv6()
     iphdr.dst = dstip
@@ -36,21 +36,21 @@ def makePacket(dstip, rthdr):
     return eth / iphdr / rthdr / udphdr / payload
 
 
-def makeRegular(dstip):
-    return makePacket(dstip, "")
+def makeRegular(dstip, ethaddr):
+    return makePacket(dstip, ethaddr, "")
 
 
-def makeRH0(dstip, addrs):
+def makeRH0(dstip, ethaddr, addrs):
     rh0 = IPv6ExtHdrRouting()
     rh0.type = 0
     rh0.segleft = len(addrs)
     rh0.addresses = addrs
     rh0.len = len(addrs) * 2  # Payload length in 8-byte units (128/8 = 16)
 
-    return makePacket(dstip, rh0)
+    return makePacket(dstip, ethaddr, rh0)
 
 
-def makeCRH16(dstip, sids):
+def makeCRH16(dstip, ethaddr, sids):
     fmt = "!BBBB" + "H" * len(sids)
     nextHeader = 17  # UDP
     byteLen = 4 + len(sids) * 2  # length of header in bytes before padding
@@ -65,10 +65,10 @@ def makeCRH16(dstip, sids):
     segLeft = 1
     crh = pack(fmt, nextHeader, extLen, routingType, segLeft, *sids)
 
-    return makePacket(dstip, crh)
+    return makePacket(dstip, ethaddr, crh)
 
 
-def makeCRH32(dstip, sids):
+def makeCRH32(dstip, ethaddr, sids):
     fmt = "!BBBB" + "I" * len(sids)
     nextHeader = 17  # UDP
     byteLen = 4 + len(sids) * 4  # length of header in bytes before padding
@@ -83,10 +83,10 @@ def makeCRH32(dstip, sids):
     segLeft = 1
     crh = pack(fmt, nextHeader, extLen, routingType, segLeft, *sids)
 
-    return makePacket(dstip, crh)
+    return makePacket(dstip, ethaddr, crh)
 
 
-def makeSRH(dstip, addrs):
+def makeSRH(dstip, ethaddr, addrs):
     fmt = "BBBB" + "BBH" + str((len(addrs) + 2) * 16) + "s"
 
     nextHeader = 17  # UDP
@@ -111,10 +111,12 @@ def makeSRH(dstip, addrs):
         fmt, nextHeader, extLen, routingType, segLeft, firstSeg, flags, reserved, segs,
     )
 
-    return makePacket(dstip, srh)
+    return makePacket(dstip, ethaddr, srh)
 
 
-def runSender(hdrType, size, count, numProcs, interval, verbose, routerVmIp):
+def runSender(
+    hdrType, size, count, numProcs, interval, verbose, routerVmIp, routerVmEth
+):
     conf.route6.flush()
     conf.route6.add(dst=C.senderRecvIp, gw=routerVmIp, dev=C.senderSendIf)
 
@@ -134,9 +136,9 @@ def runSender(hdrType, size, count, numProcs, interval, verbose, routerVmIp):
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562",
         ]
-        pkt = makeRH0(routerVmIp, addrs[:size])
+        pkt = makeRH0(routerVmIp, routerVmEth, addrs[:size])
     elif hdrType == "reg":
-        pkt = makeRegular(C.senderRecvIp)
+        pkt = makeRegular(C.senderRecvIp, routerVmEth)
     elif hdrType == "srh":
         addrs = [
             # we add the sender destination address later
@@ -151,14 +153,14 @@ def runSender(hdrType, size, count, numProcs, interval, verbose, routerVmIp):
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562",
         ]
-        pkt = makeSRH(routerVmIp, addrs[: (size - 2)])
+        pkt = makeSRH(routerVmIp, routerVmEth, addrs[: (size - 2)])
     else:
         # Random SIDs. TODO: These will need to be set up correctly.
         sids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         if hdrType == "crh16":
-            pkt = makeCRH16(routerVmIp, sids[:size])
+            pkt = makeCRH16(routerVmIp, routerVmEth, sids[:size])
         else:
-            pkt = makeCRH32(routerVmIp, sids[:size])
+            pkt = makeCRH32(routerVmIp, routerVmEth, sids[:size])
 
     print(
         f"Sending {count * numProcs} {hdrType} packet(s) with "
