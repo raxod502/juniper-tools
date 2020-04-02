@@ -1,14 +1,13 @@
 SHELL=/bin/bash
 
-# These defaults produced decent results with -p 5 -c 10 -i 0.1
+# DEFAULTS USED FOR EXPERIMENT. DO NOT CHANGE
 
-# OUtgong rate limit kbit/s
-RATE=100
+# Outgoing rate limit kbit/s
+RATE=25
 # Max number of bytes that can be queued waiting for tokens to become available
-LIMIT=200
-# Max amount of bytes that tokens can be available for instantaneously 
-# (probably don't need to change this)
-BUF=1000
+LIMIT=3000
+# Bucket size (number of tokens/bytes)
+BUF=3000
 
 tcpdump:
 	sudo tcpdump -t -n -q -K -p -# --direction=in -c 10000 -i enp0s9 -B 131072 ip6 and not icmp6
@@ -27,4 +26,5 @@ nolimit:
 
 show:
 	tc -s qdisc ls dev enp0s9
+
 

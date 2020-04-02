@@ -34,7 +34,7 @@ def runReceiver(expectedCount, timeoutSec, bufferSize, verbose):
                 "ip6 and not icmp6",
             ),
             # Cannot use PIPE with timeout :(
-            stderr=None,
+            stderr=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             timeout=timeoutSec,
         )

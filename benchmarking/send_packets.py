@@ -133,6 +133,12 @@ def runSender(
             "ed63:2a78:7311:1d4d:f759:c6e9:cf84:e586",
             "c1ec:8eef:74bf:c76e:1482:ba94:fbea:3090",
             "d2eb:66a0:8af:9f19:21a0:cc0d:ffbe:6ad5",
+            "c1ec:8eef:7:c76e:1482:ba94:fbea:3090",
+            "d2eb:66a0:8:9f19:21a0:cc0d:ffbe:6ad5",
+            "c1ec:8eef:7:c76e:1482:ba9:fbea:3090",
+            "d2eb:6a0:8:9f19:21a0:ccd:ffbe:6ad5",
+            "c1ec:eef:7:c76e:1482:ba9:fbea:3090",
+            "d2eb:66a0:8:9f19:21a0:ccd:ffbe:6ad5",
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562",
         ]
@@ -150,13 +156,19 @@ def runSender(
             "ed63:2a78:7311:1d4d:f759:c6e9:cf84:e586",
             "c1ec:8eef:74bf:c76e:1482:ba94:fbea:3090",
             "d2eb:66a0:8af:9f19:21a0:cc0d:ffbe:6ad5",
+            "c1ec:8eef:7:c76e:1482:ba94:fbea:3090",
+            "d2eb:66a0:8:9f19:21a0:cc0d:ffbe:6ad5",
+            "c1ec:8eef:7:c76e:1482:ba9:fbea:3090",
+            "d2eb:6a0:8:9f19:21a0:ccd:ffbe:6ad5",
+            "c1ec:eef:7:c76e:1482:ba9:fbea:3090",
+            "d2eb:66a0:8:9f19:21a0:ccd:ffbe:6ad5",
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562",
         ]
         pkt = makeSRH(routerVmIp, routerVmEth, addrs[: (size - 2)])
     else:
         # Random SIDs. TODO: These will need to be set up correctly.
-        sids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        sids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         if hdrType == "crh16":
             pkt = makeCRH16(routerVmIp, routerVmEth, sids[:size])
         else:

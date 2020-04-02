@@ -17,12 +17,13 @@ import constants as C
 def runTests(args):
     total = 0
     startInterval = args.interval
+    resetAmount = args.intervalDecrease * 5
     for i in range(args.numTests):
         throughput = runSingleTest(args, i)
-        # Reset the starting interval since we decreased it
-        args.interval = startInterval
+        # After we find a ballpark on the correct interval, no need to start all the 
+        # way back at the beginning or some of these tests will take forever.
+        args.interval = min(startInterval, args.interval + resetAmount)
         if throughput < 0:
-            # TODO: For the real thing, we should just stop altogether
             print("Encountered error. Ignoring this test!", file=stderr)
             continue
         total += throughput
@@ -83,9 +84,11 @@ def runIteration(args, iterNum):
             args.routerVmEth
         ),
     )
+    # Approximately account for time to send packets
+    timeout = args.timeout + args.interval * args.count
     pRecv = Process(
         target=runReceiver,
-        args=(args.count * args.processes, args.timeout, args.buffer, args.verbose),
+        args=(args.count * args.processes, timeout, args.buffer, args.verbose),
     )
 
     pRecv.start()
