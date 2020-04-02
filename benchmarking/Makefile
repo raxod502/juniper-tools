@@ -26,5 +26,3 @@ nolimit:
 
 show:
 	tc -s qdisc ls dev enp0s9
-
-
