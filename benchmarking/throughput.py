@@ -233,6 +233,8 @@ if __name__ == "__main__":
             args.processes,
             args.interval,
             args.verbose,
+            args.routerVmIp,
+            args.routerVmEth,
         )
         exit(0)
 
