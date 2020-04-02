@@ -81,7 +81,7 @@ def runIteration(args, iterNum):
             args.interval,
             args.verbose,
             args.routerVmIp,
-            args.routerVmEth
+            args.routerVmEth,
         ),
     )
     # Approximately account for time to send packets
