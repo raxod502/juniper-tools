@@ -44,7 +44,9 @@ def runSingleTest(args, testNum):
     def test_fn(interval):
         nonlocal i
         args.interval = interval
-        return runIteration(args, i)
+        result = runIteration(args, i)
+        i += 1
+        return result
 
     bisector.bisect(test_fn, starting_value=args.interval)
 
