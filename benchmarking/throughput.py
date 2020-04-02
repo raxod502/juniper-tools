@@ -9,6 +9,7 @@ import os
 import json
 import sys
 
+import bisector
 from send_packets import runSender, timeToSend
 from recv_packets import runReceiver, pktsReceived
 import constants as C
@@ -17,12 +18,11 @@ import constants as C
 def runTests(args):
     total = 0
     startInterval = args.interval
-    resetAmount = args.intervalDecrease * 5
     for i in range(args.numTests):
+        args.interval = startInterval
         throughput = runSingleTest(args, i)
-        # After we find a ballpark on the correct interval, no need to start all the 
+        # After we find a ballpark on the correct interval, no need to start all the
         # way back at the beginning or some of these tests will take forever.
-        args.interval = min(startInterval, args.interval + resetAmount)
         if throughput < 0:
             print("Encountered error. Ignoring this test!", file=stderr)
             continue
@@ -33,35 +33,22 @@ def runTests(args):
 
 def runSingleTest(args, testNum):
     """
-    Runs iterations of sending and receiving packets until the router starts dropping.
-    Returns the throughput.
+    Approximates and returns the throughput of the router using binary
+    search.
     """
     print(f"\n----------------")
     print(f"- Test #{testNum}")
     print(f"----------------")
     i = 0
-    prevTimeToSend = 0
-    while runIteration(args, i):
-        # Save last successful time to send
-        prevTimeToSend = timeToSend.value
-        # Decrease sending interval
-        args.interval = args.interval - args.intervalDecrease
-        if args.interval < 0:
-            print(
-                "Receiver did not drop any packets. Need to send them faster.",
-                file=stderr,
-            )
-            return -1
-        i += 1
 
-    if prevTimeToSend == 0:
-        print(
-            "Receiver dropped on the first iteration. Increase the starting interval.",
-            file=stderr,
-        )
-        return -2
+    def test_fn(interval):
+        nonlocal i
+        args.interval = interval
+        return runIteration(args, i)
 
-    return args.count * args.processes / prevTimeToSend
+    bisector.bisect(test_fn, starting_value=args.interval)
+
+    return args.count * args.processes / timeToSend.value
 
 
 def runIteration(args, iterNum):
