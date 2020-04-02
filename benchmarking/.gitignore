@@ -1,7 +1,9 @@
+*.egg-info
+*.json
 *.log
 *.svg
 .vagrant
 .vscode
 __pycache__
 
-/data.json
+!throughput_visual/test.json
