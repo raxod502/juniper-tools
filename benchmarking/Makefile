@@ -9,6 +9,13 @@ LIMIT=3000
 # Bucket size (number of tokens/bytes)
 BUF=3000
 
+HOSTNAME := $(shell hostname)
+ifeq ($(HOSTNAME),crh)
+	IF=enp0s9
+else
+	IF=eth2
+endif
+
 tcpdump:
 	sudo tcpdump -t -n -q -K -p -# --direction=in -c 10000 -i enp0s9 -B 131072 ip6 and not icmp6
 
@@ -18,11 +25,10 @@ rxtx:
 
 # https://linux.die.net/man/8/tc-tbf
 limit:
-	sudo tc qdisc change dev enp0s9 root tbf rate $(RATE)kbit limit $(LIMIT) buffer $(BUF) \
-	|| sudo tc qdisc add dev enp0s9 root tbf rate $(RATE)kbit limit $(LIMIT) buffer $(BUF)
+	sudo tc qdisc replace dev $(IF) root tbf rate $(RATE)kbit limit $(LIMIT) buffer $(BUF)
 
 nolimit:
-	sudo tc qdisc delete dev enp0s9 root tbf rate $(RATE)kbit limit $(LIMIT) buffer $(BUF)
+	sudo tc qdisc delete dev $(IF) root tbf rate $(RATE)kbit limit $(LIMIT) buffer $(BUF)
 
 show:
-	tc -s qdisc ls dev enp0s9
+	tc -s qdisc ls dev $(IF)
