@@ -48,7 +48,12 @@ def runSingleTest(args, testNum):
         i += 1
         return result
 
-    bisector.bisect(test_fn, starting_value=args.interval)
+    bisector.bisect(
+        test_fn,
+        starting_value=args.interval,
+        starting_velocity=args.velocity,
+        accuracy=args.accuracy,
+    )
 
     return args.count * args.processes / timeToSend.value
 
@@ -145,7 +150,7 @@ if __name__ == "__main__":
         "--interval",
         type=float,
         default=0.1,
-        help="The time (in seconds) between sending two packets.",
+        help="The starting time (in seconds) between sending two packets.",
     )
     parser.add_argument(
         "-t",
@@ -169,11 +174,18 @@ if __name__ == "__main__":
         help="The total number of trials to run.",
     )
     parser.add_argument(
-        "-d",
-        "--intervalDecrease",
+        "-a",
+        "--accuracy",
         type=float,
-        default=0.01,
-        help="The amount to decrease the interval after each iteration.",
+        default=0.95,
+        help="How accurate to get the interval before measuring throughput.",
+    )
+    parser.add_argument(
+        "-V",
+        "--velocity",
+        type=float,
+        default=1.5,
+        help="Starting velocity for the binary search (see bisector docstring).",
     )
     parser.add_argument(
         "-f",
