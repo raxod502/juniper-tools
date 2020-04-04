@@ -4,8 +4,7 @@ import subprocess
 
 startIntervals = {"rh0": 1.0, "srh": 1.1, "crh16": 0.2}
 
-for hdr in ["rh0", "crh16", "srh"]:
-    startI = startIntervals[hdr]
+for hdr, startI in startIntervals.items():
     for size in range(15, 0, -1):
         subprocess.run(
             (
@@ -21,7 +20,6 @@ for hdr in ["rh0", "crh16", "srh"]:
                 str(startI),
                 "-n",
                 "2",
-                "-d" "0.01",
                 "-s",
                 str(size),
                 "-f",
@@ -29,8 +27,7 @@ for hdr in ["rh0", "crh16", "srh"]:
                 "-v",
             )
         )
-        # Empirically, the throughput seems to increase linearly for RH0, so
-        # let's keep these tests from taking forever.
+        # Hack for better approximation of expected results.
         if hdr == "rh0":
             startI -= 0.05
 
@@ -50,8 +47,6 @@ subprocess.run(
         "0.1",
         "-n",
         "2",
-        "-d",
-        "0.01",
         "-f",
         "reg_rh0.json",
         "-v",
@@ -73,7 +68,6 @@ subprocess.run(
         "0.1",
         "-n",
         "2",
-        "-d" "0.01",
         "-f",
         "reg_crh.json",
         "-v",
