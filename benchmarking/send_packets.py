@@ -93,7 +93,7 @@ def makeSRH(dstip, ethaddr, addrs):
     extLen = (len(addrs) + 2) * 2  # length of header in bytes
     routingType = 4
     segLeft = len(addrs) + 1
-    firstSeg = len(addrs) + 1
+    firstSeg = len(addrs)
     flags = 0
     reserved = 0
 
@@ -103,9 +103,7 @@ def makeSRH(dstip, ethaddr, addrs):
         segs.extend(addr.packed)
 
     destIp = ipaddress.IPv6Address(C.senderRecvIp)
-    srcIp = ipaddress.IPv6Address(dstip)
     segs.extend(destIp.packed)
-    segs.extend(srcIp.packed)
 
     srh = pack(
         fmt, nextHeader, extLen, routingType, segLeft, firstSeg, flags, reserved, segs,
@@ -165,7 +163,7 @@ def runSender(
             "c85d:1618:799:8c6:41c2:2dc6:83e9:175",
             "4bd7:4270:d60e:a973:5c92:b4ec:fbb3:9562",
         ]
-        pkt = makeSRH(routerVmIp, routerVmEth, addrs[: (size - 2)])
+        pkt = makeSRH(routerVmIp, routerVmEth, addrs[: (size - 1)])
     else:
         # Random SIDs. TODO: These will need to be set up correctly.
         sids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
