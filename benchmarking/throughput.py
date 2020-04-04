@@ -87,7 +87,7 @@ def runIteration(args, iterNum):
     pSend.join()
     pRecv.join()
 
-    if pktsReceived.value:
+    if pktsReceived.value >= args.count * args.processes:
         print("Received all packets.")
         return True
     else:
