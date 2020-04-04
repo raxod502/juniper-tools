@@ -28,6 +28,9 @@ wireshark
 
 # scapy
 python3-pip
+
+# look at our data files
+jq
 "
 
 export DEBIAN_FRONTEND=noninteractive
