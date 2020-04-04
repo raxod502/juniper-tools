@@ -21,11 +21,10 @@ def runTests(args):
     for i in range(args.numTests):
         args.interval = startInterval
         throughput = runSingleTest(args, i)
-        # After we find a ballpark on the correct interval, no need to start all the
-        # way back at the beginning or some of these tests will take forever.
         if throughput < 0:
             print("Encountered error. Ignoring this test!", file=stderr)
             continue
+        print(f"  Throughput for test {i}: {throughput}")
         total += throughput
 
     return total / args.numTests
@@ -92,11 +91,14 @@ def runIteration(args, iterNum):
     pSend.join()
     pRecv.join()
 
-    if pktsReceived.value >= args.count * args.processes:
-        print("Received all packets.")
+    expectedPkts = args.count * args.processes
+    if pktsReceived.value >= expectedPkts:
+        print(f"Received all {expectedPkts} packets.")
         return True
     else:
-        print("Did not receive all the packets.")
+        print(
+            f"Did not receive all the packets (only got {pktsReceived.value} out of {expectedPkts})."
+        )
         return False
 
 
