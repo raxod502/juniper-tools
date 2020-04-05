@@ -233,6 +233,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-/",
+        "-λ",
+        "-Γ",
         "--actual-versus-attempted",
         default=False,
         action="store_true",
