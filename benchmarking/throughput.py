@@ -79,7 +79,7 @@ def sendReceivePackets(args):
     )
 
     pRecv.start()
-    # Let receiver get started. TODO: Make this better later.
+    # Let receiver get started.
     sleep(1)
     pSend.start()
     pSend.join()
@@ -282,7 +282,6 @@ if __name__ == "__main__":
         doActualVersusAttempted(args)
         exit(0)
 
-    # TODO: Remove this after. Just for you Hakan!
     if args.sendOnly:
         runSender(
             args.type,
