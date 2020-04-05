@@ -18,9 +18,13 @@ import constants as C
 def runTests(args):
     total = 0
     startInterval = args.interval
+    startVelocity = args.velocity
     for i in range(args.numTests):
-        args.interval = startInterval
-        throughput = runSingleTest(args, i)
+        throughput, value, velocity = runSingleTest(
+            args, i, startInterval, startVelocity
+        )
+        startInterval = value
+        startVelocity = (velocity - 1) * 4 + 1
         if throughput < 0:
             print("Encountered error. Ignoring this test!", file=stderr)
             continue
@@ -30,7 +34,7 @@ def runTests(args):
     return total / args.numTests
 
 
-def runSingleTest(args, testNum):
+def runSingleTest(args, testNum, starting_value, starting_velocity):
     """
     Approximates and returns the throughput of the router using binary
     search.
@@ -47,14 +51,14 @@ def runSingleTest(args, testNum):
         i += 1
         return result
 
-    bisector.bisect(
+    value, velocity = bisector.bisect(
         test_fn,
-        starting_value=args.interval,
-        starting_velocity=args.velocity,
+        starting_value=starting_value,
+        starting_velocity=starting_velocity,
         accuracy=args.accuracy,
     )
 
-    return args.count * args.processes / timeToSend.value
+    return args.count * args.processes / timeToSend.value, value, velocity
 
 
 def sendReceivePackets(args):

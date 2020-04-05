@@ -31,8 +31,10 @@ def bisect(test_fn, starting_value=1, starting_velocity=1.5, accuracy=0.95):
     arg = starting_value
     velocity = starting_velocity
     last_side = None
-    while velocity >= 1 / accuracy or last_side != True:
+    seen = set()
+    while velocity >= 1 / accuracy or last_side != True or seen != {False, True}:
         cur_side = test_fn(arg)
+        seen.add(cur_side)
         if cur_side != last_side:
             if last_side is not None:
                 velocity = 1 + (velocity - 1) / 2
@@ -46,4 +48,4 @@ def bisect(test_fn, starting_value=1, starting_velocity=1.5, accuracy=0.95):
         if new_arg == arg:
             break
         arg = new_arg
-    return arg
+    return (arg, velocity)
