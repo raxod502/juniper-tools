@@ -39,6 +39,8 @@ def bisect(test_fn, starting_value=1, starting_velocity=1.5, accuracy=0.95):
             if last_side is not None:
                 velocity = 1 + (velocity - 1) / 2
             last_side = cur_side
+        else:
+            velocity = 1 + (velocity - 1) * 1.25
         if cur_side:
             new_arg = arg / velocity
         else:

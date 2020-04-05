@@ -20,11 +20,9 @@ def runTests(args):
     startInterval = args.interval
     startVelocity = args.velocity
     for i in range(args.numTests):
-        throughput, value, velocity = runSingleTest(
+        throughput, startInterval, startVelocity = runSingleTest(
             args, i, startInterval, startVelocity
         )
-        startInterval = value
-        startVelocity = (velocity - 1) * 4 + 1
         if throughput < 0:
             print("Encountered error. Ignoring this test!", file=stderr)
             continue
