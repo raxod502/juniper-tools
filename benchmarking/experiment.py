@@ -1,11 +1,28 @@
 #!/usr/bin/env python3
 
+import argparse
 import subprocess
+import sys
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-o",
+    "--only-header",
+    dest="header",
+    choices=("rh0", "srh", "crh16", "reg_rh0", "reg_crh"),
+)
+args = parser.parse_args()
+
+
+def include_hdr(hdr):
+    return not args.header or args.header == hdr
+
 
 startIntervals = {"rh0": 1.0, "srh": 1.1, "crh16": 0.2}
 
-for hdr in ["rh0", "crh16", "srh"]:
-    startI = startIntervals[hdr]
+for hdr, startI in startIntervals.items():
+    if not include_hdr(hdr):
+        continue
     for size in range(15, 0, -1):
         subprocess.run(
             (
@@ -20,8 +37,7 @@ for hdr in ["rh0", "crh16", "srh"]:
                 "-i",
                 str(startI),
                 "-n",
-                "2",
-                "-d" "0.01",
+                "5",
                 "-s",
                 str(size),
                 "-f",
@@ -29,53 +45,54 @@ for hdr in ["rh0", "crh16", "srh"]:
                 "-v",
             )
         )
-        # Empirically, the throughput seems to increase linearly for RH0, so
-        # let's keep these tests from taking forever.
+        # Hack for better approximation of expected results.
         if hdr == "rh0":
             startI -= 0.05
 
-
-# Regular packets with rh0 machine
-subprocess.run(
-    (
-        "sudo",
-        "python3",
-        "throughput.py",
-        "reg",
-        "-p",
-        "10",
-        "-c",
-        "10",
-        "-i",
-        "0.1",
-        "-n",
-        "2",
-        "-d",
-        "0.01",
-        "-f",
-        "reg_rh0.json",
-        "-v",
+if include_hdr("reg_rh0"):
+    # Regular packets with rh0 machine
+    subprocess.run(
+        (
+            "sudo",
+            "python3",
+            "throughput.py",
+            "reg",
+            "-m",
+            "rh0",
+            "-p",
+            "10",
+            "-c",
+            "10",
+            "-i",
+            "0.1",
+            "-n",
+            "5",
+            "-f",
+            "reg_rh0.json",
+            "-v",
+        )
     )
-)
 
-# Regular packets with crh machine
-subprocess.run(
-    (
-        "sudo",
-        "python3",
-        "throughput.py",
-        "reg",
-        "-p",
-        "10",
-        "-c",
-        "10",
-        "-i",
-        "0.1",
-        "-n",
-        "2",
-        "-d" "0.01",
-        "-f",
-        "reg_crh.json",
-        "-v",
+if include_hdr("reg_crh"):
+    # Regular packets with crh machine
+    subprocess.run(
+        (
+            "sudo",
+            "python3",
+            "throughput.py",
+            "reg",
+            "-m",
+            "crh",
+            "-p",
+            "10",
+            "-c",
+            "10",
+            "-i",
+            "0.1",
+            "-n",
+            "5",
+            "-f",
+            "reg_crh.json",
+            "-v",
+        )
     )
-)

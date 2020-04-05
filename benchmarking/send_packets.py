@@ -165,7 +165,7 @@ def runSender(
         ]
         pkt = makeSRH(routerVmIp, routerVmEth, addrs[: (size - 1)])
     else:
-        # Random SIDs. TODO: These will need to be set up correctly.
+        # Random SIDs.
         sids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         if hdrType == "crh16":
             pkt = makeCRH16(routerVmIp, routerVmEth, sids[:size])

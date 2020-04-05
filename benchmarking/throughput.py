@@ -18,20 +18,21 @@ import constants as C
 def runTests(args):
     total = 0
     startInterval = args.interval
+    startVelocity = args.velocity
     for i in range(args.numTests):
-        args.interval = startInterval
-        throughput = runSingleTest(args, i)
-        # After we find a ballpark on the correct interval, no need to start all the
-        # way back at the beginning or some of these tests will take forever.
+        throughput, startInterval, startVelocity = runSingleTest(
+            args, i, startInterval, startVelocity
+        )
         if throughput < 0:
             print("Encountered error. Ignoring this test!", file=stderr)
             continue
+        print(f"  Throughput for test {i}: {throughput}")
         total += throughput
 
     return total / args.numTests
 
 
-def runSingleTest(args, testNum):
+def runSingleTest(args, testNum, starting_value, starting_velocity):
     """
     Approximates and returns the throughput of the router using binary
     search.
@@ -48,23 +49,17 @@ def runSingleTest(args, testNum):
         i += 1
         return result
 
-    bisector.bisect(
+    value, velocity = bisector.bisect(
         test_fn,
-        starting_value=args.interval,
-        starting_velocity=args.velocity,
+        starting_value=starting_value,
+        starting_velocity=starting_velocity,
         accuracy=args.accuracy,
     )
 
-    return args.count * args.processes / timeToSend.value
+    return args.count * args.processes / timeToSend.value, value, velocity
 
 
-def runIteration(args, iterNum):
-    """
-    Runs an iteration of sending and receiving packets.
-    Returns True if all packets were received.
-    """
-    print(f"\nIteration #{iterNum}")
-
+def sendReceivePackets(args):
     pSend = Process(
         target=runSender,
         args=(
@@ -86,17 +81,31 @@ def runIteration(args, iterNum):
     )
 
     pRecv.start()
-    # Let receiver get started. TODO: Make this better later.
+    # Let receiver get started.
     sleep(1)
     pSend.start()
     pSend.join()
     pRecv.join()
 
-    if pktsReceived.value >= args.count * args.processes:
-        print("Received all packets.")
+    return pktsReceived.value
+
+
+def runIteration(args, iterNum):
+    """
+    Runs an iteration of sending and receiving packets.
+    Returns True if all packets were received.
+    """
+    print(f"\nIteration #{iterNum}")
+
+    receivedPkts = sendReceivePackets(args)
+    expectedPkts = args.count * args.processes
+    if receivedPkts >= expectedPkts:
+        print(f"Received all {expectedPkts} packets.")
         return True
     else:
-        print("Did not receive all the packets.")
+        print(
+            f"Did not receive all the packets (only got {receivedPkts} out of {expectedPkts})."
+        )
         return False
 
 
@@ -112,6 +121,27 @@ def writeJson(filename, hdrType, numDevices, throughput):
 
     with open(filename, "w") as outFile:
         json.dump(data, outFile)
+
+
+def doActualVersusAttempted(args):
+    num_incrs = args.actual_versus_attempted_increments
+    points = []
+    base_interval = args.interval
+    for j in range(num_incrs):
+        args.interval = base_interval * 2 * (j / num_incrs)
+        print(f"===== Interval {args.interval:.04f}s")
+        for i in range(args.numTests):
+            num_sent = args.count * args.processes
+            num_received = sendReceivePackets(args)
+            time_taken = timeToSend.value
+            attempted_throughput = num_sent / time_taken
+            actual_throughput = num_received / time_taken
+            print(
+                f"  Attempted {attempted_throughput}, actual {actual_throughput} ({num_received}/{num_sent} packets received)"
+            )
+            points.append((attempted_throughput, actual_throughput))
+    with open(args.dataFile, "w") as f:
+        json.dump(points, f)
 
 
 if __name__ == "__main__":
@@ -202,6 +232,22 @@ if __name__ == "__main__":
         help="Only send packets.",
     )
     parser.add_argument(
+        "-/",
+        "-λ",
+        "-Γ",
+        "--actual-versus-attempted",
+        default=False,
+        action="store_true",
+        help="Collect data for a graph of actual versus attempted throughput.",
+    )
+    parser.add_argument(
+        "-x",
+        "--actual-versus-attempted-increments",
+        type=int,
+        default=20,
+        help="Number of x-values for actual versus attempted throughput.",
+    )
+    parser.add_argument(
         "-v", "--verbose", default=False, action="store_true", help="Print stuff."
     )
     args = parser.parse_args()
@@ -236,7 +282,10 @@ if __name__ == "__main__":
     if os.geteuid() != 0:
         os.execlp("sudo", "throughput.py", os.path.realpath(__file__), *sys.argv[1:])
 
-    # TODO: Remove this after. Just for you Hakan!
+    if args.actual_versus_attempted:
+        doActualVersusAttempted(args)
+        exit(0)
+
     if args.sendOnly:
         runSender(
             args.type,
