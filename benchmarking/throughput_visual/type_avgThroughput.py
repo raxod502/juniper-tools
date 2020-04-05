@@ -6,12 +6,14 @@ import json
 import pygal
 
 parser = argparse.ArgumentParser()
-parser.add_argument("file")
+parser.add_argument("files", nargs="+")
 
 args = parser.parse_args()
 
-with open(args.file) as throughputDataFile:
-    results = json.load(throughputDataFile)
+results = []
+for fname in args.files:
+    with open(fname) as throughputDataFile:
+        results.extend(json.load(throughputDataFile))
 
 typ_avg_thru = {}
 for result in sorted(results, key=lambda r: r["numEntries"]):
