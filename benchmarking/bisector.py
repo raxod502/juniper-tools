@@ -18,6 +18,9 @@ def bisect(test_fn, starting_value=1, starting_velocity=1.5, accuracy=0.95):
     current function argument. The promise is that if `accuracy` is
     (for example) 0.95, then the returned value will be within 5% of
     the actual cutoff point.
+
+    As a hack to support our Clinic project specifically, the last
+    evaluation of the function is guaranteed to return true.
     """
     if starting_value <= 0:
         raise ValueError("starting_value must be positive")
@@ -28,7 +31,7 @@ def bisect(test_fn, starting_value=1, starting_velocity=1.5, accuracy=0.95):
     arg = starting_value
     velocity = starting_velocity
     last_side = None
-    while velocity >= 1 / accuracy:
+    while velocity >= 1 / accuracy or last_side != True:
         cur_side = test_fn(arg)
         if cur_side != last_side:
             if last_side is not None:
