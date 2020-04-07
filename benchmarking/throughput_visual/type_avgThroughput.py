@@ -16,7 +16,7 @@ for fname in args.files:
         results.extend(json.load(throughputDataFile))
 
 typ_avg_thru = {}
-for result in sorted(results, key=lambda r: r["numEntries"]):
+for result in sorted(results, key=lambda r: (r["type"], r["numEntries"])):
     typ = result["type"]
     numEntries = result["numEntries"]
     typ_numEntries = typ + "(" + str(numEntries) + ")"
