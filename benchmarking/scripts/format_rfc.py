@@ -3,6 +3,15 @@
 import argparse
 import re
 
+SECTION_HEADERS = (
+    "Abstract",
+    "Status of This Memo",
+    "Copyright Notice",
+    "Table of Contents",
+    "Acknowledgements",
+    "Authors' Addresses",
+)
+
 parser = argparse.ArgumentParser()
 parser.add_argument("file", help="Filename of Internet-Draft to format")
 parser.add_argument("-w", "--write", action="store_true", help="Write file in place")
@@ -43,12 +52,18 @@ def break_into_pages(all_lines):
         parts.append(part)
     pages = []
     page = []
-    for part in parts:
+    for idx, part in enumerate(parts):
         new_page = list(page)
         if new_page:
             new_page.append("")
         new_page.extend(part)
-        if len(new_page) > 58:
+        # Spill to next page if necessary, and avoid orphaned section
+        # headers.
+        if len(new_page) > 58 or (
+            len(part) == 1
+            and (re.match(r"[0-9]+\.", part[0]) or part[0] in SECTION_HEADERS)
+            and len(new_page) + 1 + len(parts[idx + 1]) > 58
+        ):
             pages.append(page)
             page = part
         else:
@@ -75,15 +90,7 @@ for line in text.splitlines():
         if (
             not re.match(r" *[0-9]+\.", line)
             and not re.match(r" ", line)
-            and line
-            not in (
-                "Abstract",
-                "Status of This Memo",
-                "Copyright Notice",
-                "Table of Contents",
-                "Acknowledgements",
-                "Authors' Addresses",
-            )
+            and line not in SECTION_HEADERS
         ):
             line = wrap_paragraph(line)
     if line:
