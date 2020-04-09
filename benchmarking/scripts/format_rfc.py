@@ -29,6 +29,35 @@ def wrap_paragraph(content):
     return "\n".join("  " + line for line in lines)
 
 
+def break_into_pages(all_lines):
+    parts = []
+    part = []
+    for line in all_lines:
+        if line:
+            part.append(line)
+        else:
+            if part:
+                parts.append(part)
+            part = []
+    if part:
+        parts.append(part)
+    pages = []
+    page = []
+    for part in parts:
+        new_page = list(page)
+        if new_page:
+            new_page.append("")
+        new_page.extend(part)
+        if len(new_page) > 58:
+            pages.append(page)
+            page = part
+        else:
+            page = new_page
+    if page:
+        pages.append(page)
+    return pages
+
+
 formatted_lines = []
 state = "header"
 for line in text.splitlines():
@@ -57,9 +86,13 @@ for line in text.splitlines():
             )
         ):
             line = wrap_paragraph(line)
-    formatted_lines.append(line)
+    if line:
+        formatted_lines.extend(line.splitlines())
+    else:
+        formatted_lines.append(line)
 
-formatted_text = "".join(l + "\n" for l in formatted_lines)
+pages = break_into_pages(formatted_lines)
+formatted_text = "\n\f\n".join("\n".join(page) for page in pages).strip() + "\n"
 
 if args.write:
     with open(args.file, "w") as f:
