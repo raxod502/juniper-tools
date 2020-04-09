@@ -79,6 +79,8 @@ for line in text.splitlines():
     if state == "header":
         if not line:
             state = "title"
+        else:
+            line = line.rjust(72)
     elif state == "title":
         if not line:
             state = "body"
