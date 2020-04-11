@@ -27,7 +27,7 @@ for result in sorted(results, key=lambda r: (r["type"], r["numEntries"])):
         typ_avg_thru[typ_numEntries] = throughput
 
 
-bar_graph = pygal.StackedBar(show_legend=False, style=BlueStyle)
+bar_graph = pygal.StackedBar(x_label_rotation=-45, show_legend=False, style=BlueStyle)
 bar_graph.x_title = "Header Type"
 bar_graph.y_title = "Average Throughput"
 
