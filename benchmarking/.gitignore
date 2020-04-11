@@ -5,5 +5,7 @@
 .vagrant
 .vscode
 __pycache__
+draft/*
 
 !throughput_visual/test.json
+!draft/.gitkeep

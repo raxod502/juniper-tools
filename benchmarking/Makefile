@@ -32,3 +32,9 @@ nolimit:
 
 show:
 	tc -s qdisc ls dev $(IF)
+
+.PHONY: draft
+draft:
+	scripts/format_rfc.py draft/raw.txt > draft/final.txt
+	cat draft/final.txt | enscript --margins 76::76: -B -q -p draft/final.ps
+	ps2pdf draft/final.ps draft/final.pdf
