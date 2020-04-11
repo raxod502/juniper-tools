@@ -17,10 +17,12 @@ with open(args.file) as throughputDataFile:
 
 line_chart = pygal.XY(show_legend=False)
 fileName = " (" + os.path.basename(args.file) + ")"
-line_chart.title ="Packet Throughput" + fileName
-line_chart.x_title = "Attempted Throughput"
-line_chart.y_title = "Actual Throughput"
+line_chart.title ="Throughput Relative to Number of Entries" + fileName
+line_chart.x_title = "Number of Entries"
+line_chart.y_title = "Average Throughput"
 
-xyCoords = [(pair[0], pair[1]) for pair in sorted(results, key=lambda r: r[0])]
+sortBy = lambda r: r["numEntries"]
+sortedList = sorted(results, key=sortBy)
+xyCoords = [(opt["numEntries"], opt["throughput"]) for opt in sortedList]
 line_chart.add('', xyCoords)
-line_chart.render_to_file('actual_attempted.svg')
+line_chart.render_to_file('numEntries_avgThroughput.svg')
