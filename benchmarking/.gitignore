@@ -2,6 +2,7 @@
 *.json
 *.log
 *.svg
+*.swp
 .vagrant
 .vscode
 __pycache__
