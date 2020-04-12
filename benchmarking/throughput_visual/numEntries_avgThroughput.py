@@ -18,7 +18,7 @@ for fname in args.files:
 line_chart = pygal.XY()
 line_chart.title ="Throughput Relative to Number of Entries"
 line_chart.x_title = "Number of Entries"
-line_chart.y_title = "Average Throughput"
+line_chart.y_title = "Average Throughput (Packets)"
 
 sortBy = lambda r: (r["type"], r["numEntries"])
 sortedEntries = sorted(results, key=sortBy)
