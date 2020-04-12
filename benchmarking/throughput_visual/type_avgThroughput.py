@@ -5,11 +5,13 @@ import json
 
 import cairosvg
 import pygal
+from pygal.style import Style
 from pygal.style import BlueStyle
 
 parser = argparse.ArgumentParser()
 parser.add_argument("files", nargs="+")
-parser.add_argument("filetype", help="{svg, png}")
+filetypes = ["svg", "png"]
+parser.add_argument("filetype", choices=filetypes)
 
 args = parser.parse_args()
 
@@ -38,8 +40,14 @@ for result in sorted(results, key=lambda r: (r["numEntries"], r["type"])):
         raise Exception(erroMsg.format(typ_num))
 
 
-bar_graph = pygal.Bar(show_legend=False, width=1750, print_labels=True, style=BlueStyle)
+custom_style = BlueStyle()
+labelSize = 17
+custom_style.label_font_size = labelSize
+custom_style.major_label_font_size = labelSize
+custom_style.title_font_size = 23
+custom_style.value_label_font_size = 11
 
+bar_graph = pygal.Bar(show_legend=False, width=1750, print_labels=True, style=custom_style)
 bar_graph.title = "Average Throughput Per Header Type"
 bar_graph.x_title = "Header Type (Number of Entries)"
 bar_graph.y_title = "Average Throughput (Packets)"
