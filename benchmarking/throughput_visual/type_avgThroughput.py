@@ -50,7 +50,7 @@ custom_style.value_label_font_size = 11
 bar_graph = pygal.Bar(show_legend=False, width=1750, print_labels=True, style=custom_style)
 bar_graph.title = "Average Throughput Per Header Type"
 bar_graph.x_title = "Header Type (Number of Entries)"
-bar_graph.y_title = "Average Throughput (Packets)"
+bar_graph.y_title = "Average Throughput (packets)"
 bar_graph.x_labels = xLabels
 
 xAxisLen = len(xLabels)
