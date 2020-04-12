@@ -3,11 +3,13 @@
 import argparse
 import json
 
+import cairosvg
 import pygal
 from pygal.style import BlueStyle
 
 parser = argparse.ArgumentParser()
 parser.add_argument("files", nargs="+")
+parser.add_argument("filetype", help="{svg, png}")
 
 args = parser.parse_args()
 
@@ -50,4 +52,7 @@ for numEntries, typList in numEntries_typ_thru.items():
         xValues[xLabels.index(typ)] = {'value': throughput, 'label': str(numEntries)}
     bar_graph.add(str(numEntries), xValues)
 
-bar_graph.render_to_file("type_averageThru.svg")
+if args.filetype == "png":
+    bar_graph.render_to_png("type_averageThru.png")
+elif args.filetype == "svg":
+    bar_graph.render_to_file("type_averageThru.svg")

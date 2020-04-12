@@ -2,6 +2,7 @@
 *.json
 *.log
 *.svg
+*.png
 *.swp
 .vagrant
 .vscode
