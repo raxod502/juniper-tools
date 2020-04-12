@@ -27,9 +27,6 @@ line_chart.y_title = "Actual Throughput (packets)"
 xyCoords = [(pair[0], pair[1]) for pair in sorted(results, key=lambda r: r[0])]
 line_chart.add('', xyCoords)
 
-
-line_chart.render_to_file('actual_attempted.svg')
-
 if args.filetype == "png":
     line_chart.render_to_png("actual_attempted.png")
 elif args.filetype == "svg":
