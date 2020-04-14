@@ -27,12 +27,12 @@ with open(args.file) as f:
 def wrap_paragraph(content):
     lines = []
     line = ""
-    for match in re.finditer(r"\s*\S*", content):
+    for match in re.finditer(r"\S*\s*\S*", content):
         part = match.group(0)
         if len(line) + len(part) > 69:
             lines.append(line)
             line = ""
-        if not line:
+        if lines and not line:
             part = part.lstrip()
         line += part
     if line:
@@ -137,11 +137,7 @@ for line in text.splitlines():
     elif state == "body":
         if line == "-- Notes --":
             break
-        if (
-            not re.match(r" *[0-9]+\.", line)
-            and not re.match(r" ", line)
-            and line not in SECTION_HEADERS
-        ):
+        if not re.match(r" *[0-9]+\.", line) and line not in SECTION_HEADERS:
             line = wrap_paragraph(line)
     if line:
         formatted_lines.extend(line.splitlines())
