@@ -11,3 +11,4 @@ draft/*
 
 !throughput_visual/test.json
 !draft/.gitkeep
+!draft/draft-clinic-ipv6-ext-hdr-bench-method-00
