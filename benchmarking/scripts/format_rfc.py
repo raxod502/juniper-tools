@@ -29,7 +29,7 @@ def wrap_paragraph(content):
     line = ""
     for match in re.finditer(r"\s*\S*", content):
         part = match.group(0)
-        if len(line) + len(part) > 70:
+        if len(line) + len(part) > 69:
             lines.append(line)
             line = ""
         if not line:
@@ -37,7 +37,7 @@ def wrap_paragraph(content):
         line += part
     if line:
         lines.append(line)
-    return "\n".join("  " + line for line in lines)
+    return "\n".join("   " + line for line in lines)
 
 
 def break_into_pages(all_lines):
@@ -62,8 +62,12 @@ def break_into_pages(all_lines):
         # Spill to next page if necessary, and avoid orphaned section
         # headers.
         if len(new_page) > 58 or (
-            len(part) == 1
-            and (re.match(r"[0-9]+\.", part[0]) or part[0] in SECTION_HEADERS)
+            idx < len(parts) - 1
+            and (
+                len(part) == 1
+                and (re.match(r"[0-9]+\.", part[0]) or part[0] in SECTION_HEADERS)
+                or re.match(r" *EMail:", parts[idx + 1][0])
+            )
             and len(new_page) + 1 + len(parts[idx + 1]) > 58
         ):
             pages.append(page)
