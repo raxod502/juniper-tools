@@ -2,6 +2,7 @@
 
 import argparse
 import re
+import sys
 
 SECTION_HEADERS = (
     "Abstract",
@@ -73,6 +74,34 @@ def break_into_pages(all_lines):
     return pages
 
 
+def find_sections(pages):
+    sections = {}
+    for page_num, page in enumerate(pages, 1):
+        for line in page:
+            match = re.match(r"((?:[0-9]+\.)+) +(.+)", line)
+            if match:
+                sections[match.group(1)] = (page_num, match.group(2))
+    return sections
+
+
+def format_toc(pages, sections):
+    for page in pages:
+        for idx, line in enumerate(page):
+            match = re.match(r" *((?:[0-9]+\.)+) ([^ ].*)$", line)
+            if match:
+                page_num, sec_name = sections[match.group(1)]
+                if match.group(2) != sec_name:
+                    raise ValueError(
+                        f"mismatched name in TOC for section {repr(match.group(1))}"
+                        f" (expected {repr(sec_name)}, got {repr(match.group(2))})"
+                    )
+                line = (" " * 3) + line + " "
+                suffix = str(page_num)
+                line += "." * (70 - len(line + suffix))
+                line += suffix
+                page[idx] = line
+
+
 formatted_lines = []
 state = "header"
 for line in text.splitlines():
@@ -101,6 +130,7 @@ for line in text.splitlines():
         formatted_lines.append(line)
 
 pages = break_into_pages(formatted_lines)
+format_toc(pages, find_sections(pages))
 formatted_text = "\n\f\n".join("\n".join(page) for page in pages).strip() + "\n"
 
 if args.write:
