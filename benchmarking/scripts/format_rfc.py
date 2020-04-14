@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import datetime
 import re
 import sys
 
@@ -97,9 +98,23 @@ def format_toc(pages, sections):
                     )
                 line = (" " * 3) + line + " "
                 suffix = str(page_num)
-                line += "." * (70 - len(line + suffix))
+                line += "." * (72 - len(line + suffix))
                 line += suffix
                 page[idx] = line
+
+
+def substitute_expiry(pages):
+    for page in pages:
+        for idx, line in enumerate(page):
+            match = re.fullmatch(r"Expires: \[DATE\] +(.+)", line)
+            if match:
+                expiry = (
+                    datetime.date.today() + datetime.timedelta(days=185)
+                ).strftime("%B %-d, %Y")
+                lhs = f"Expires: {expiry}"
+                rhs = match.group(1)
+                padding = " " * (72 - len(lhs + rhs))
+                page[idx] = lhs + padding + rhs
 
 
 formatted_lines = []
@@ -131,6 +146,7 @@ for line in text.splitlines():
 
 pages = break_into_pages(formatted_lines)
 format_toc(pages, find_sections(pages))
+substitute_expiry(pages)
 formatted_text = "\n\f\n".join("\n".join(page) for page in pages).strip() + "\n"
 
 if args.write:
