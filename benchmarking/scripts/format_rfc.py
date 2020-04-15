@@ -25,11 +25,17 @@ with open(args.file) as f:
 
 
 def wrap_paragraph(content):
+    match = re.match(r"[o ]  ", content)
+    if match:
+        prefix = match.group(0)
+        content = content[len(prefix) :]
+    else:
+        prefix = ""
     lines = []
     line = ""
     for match in re.finditer(r"\S*\s*\S*", content):
         part = match.group(0)
-        if len(line) + len(part) > 69:
+        if len(line) + len(part) > 69 - len(prefix):
             lines.append(line)
             line = ""
         if lines and not line:
@@ -37,6 +43,8 @@ def wrap_paragraph(content):
         line += part
     if line:
         lines.append(line)
+    for idx, line in enumerate(lines):
+        lines[idx] = (prefix if idx == 0 else " " * len(prefix)) + line
     return "\n".join("   " + line for line in lines)
 
 
