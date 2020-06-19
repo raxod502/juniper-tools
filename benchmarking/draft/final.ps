@@ -1,0 +1,920 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 76 24 571 766
+%%Title: Enscript Output
+%%For: Radon Rosborough
+%%Creator: GNU Enscript 1.6.6
+%%CreationDate: Mon Apr 27 16:22:14 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: A4 595 842 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6 6
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6 6
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Courier
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Courier /F-gs-font MF
+/F-gs-font 10 10 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [595 842] 
+  >> setpagedevice
+} if
+/d_page_w 495 def
+/d_page_h 742 def
+/d_header_x 0 def
+/d_header_y 742 def
+/d_header_w 495 def
+/d_header_h 0 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 495 def
+/d_footer_h 0 def
+/d_output_w 495 def
+/d_output_h 742 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+76 24 translate
+/pagenum 1 def
+/fname () def
+/fdir (.) def
+/ftail (.) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+5 729 M
+(Independent                                                  Hakan Alpan) s
+5 718 M
+(Internet-Draft                                            Bradley Newton) s
+5 707 M
+(Intended status: Informational                           Miles President) s
+5 696 M
+(Expires: October 29, 2020                               Radon Rosborough) s
+5 685 M
+(                                                     Harvey Mudd College) s
+5 674 M
+(                                                                May 2020) s
+5 652 M
+(      Benchmarking Methodology for IPv6 Routing Extension Headers       ) s
+5 641 M
+(               draft-clinic-ipv6-ext-hdr-bench-method-00                ) s
+5 619 M
+(Abstract) s
+5 597 M
+(   This document specifies a test procedure that should be used to) s
+5 586 M
+(   evaluate the performance characteristics of a network interconnection) s
+5 575 M
+(   device that processes IPv6 routing extension headers.  The results of) s
+5 564 M
+(   the test procedure can be used to compare the performance of the) s
+5 553 M
+(   Compressed Routing Header \(CRH\) with the performance of other routing) s
+5 542 M
+(   extension headers and with the performance of packets that do not) s
+5 531 M
+(   include routing extension headers.  The routing extension headers) s
+5 520 M
+(   that may be compared with the CRH using the test procedure are the) s
+5 509 M
+(   Segment Routing Header \(SRH\) and Routing Header Type 0 \(RH0\).) s
+5 487 M
+(Status of This Memo) s
+5 465 M
+(   This Internet-Draft is submitted in full conformance with the) s
+5 454 M
+(   provisions of BCP 78 and BCP 79.  Internet-Drafts are working) s
+5 443 M
+(   documents of the Internet Engineering Task Force \(IETF\), its areas,) s
+5 432 M
+(   and its working groups.  Note that other groups may also distribute) s
+5 421 M
+(   working documents as Internet-Drafts.) s
+5 399 M
+(   Internet-Drafts are draft documents valid for a maximum of six months) s
+5 388 M
+(   and may be updated, replaced, or obsoleted by other documents at any) s
+5 377 M
+(   time.  It is inappropriate to use Internet-Drafts as reference) s
+5 366 M
+(   material or to cite them other than as "work in progress.") s
+5 344 M
+(   The list of current Internet-Drafts can be accessed at) s
+5 333 M
+(   http://www.ietf.org/1id-abstracts.html) s
+5 311 M
+(   The list of Internet-Draft Shadow Directories can be accessed at) s
+5 300 M
+(   http://www.ietf.org/shadow.html) s
+5 278 M
+(Copyright Notice) s
+5 256 M
+(   Copyright \(c\) 2020 IETF Trust and the persons identified as the) s
+5 245 M
+(   document authors.  All rights reserved.) s
+5 223 M
+(   This document is subject to BCP 78 and the IETF Trust's Legal) s
+5 212 M
+(   Provisions Relating to IETF Documents) s
+5 201 M
+(   \(http://trustee.ietf.org/license-info\) in effect on the date of) s
+5 190 M
+(   publication of this document.  Please review these documents) s
+5 179 M
+(   carefully, as they describe your rights and restrictions with respect) s
+5 168 M
+(   to this document.  Code Components extracted from this document must) s
+5 157 M
+(   include Simplified BSD License text as described in Section 4.e of) s
+5 146 M
+(   the Trust Legal Provisions and are provided without warranty as) s
+5 135 M
+(   described in the Simplified BSD License.) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+76 24 translate
+/pagenum 2 def
+/fname () def
+/fdir (.) def
+/ftail (.) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+5 718 M
+(Table of Contents) s
+5 696 M
+(   1. Introduction ....................................................2) s
+5 685 M
+(   2. Requirements Language ...........................................2) s
+5 674 M
+(   3. Test Procedure ..................................................3) s
+5 663 M
+(      3.1. DUT Setup ..................................................3) s
+5 652 M
+(      3.2. Independent Variables ......................................3) s
+5 641 M
+(      3.3. Header Contents ............................................4) s
+5 630 M
+(      3.4. Frame Sizes ................................................4) s
+5 619 M
+(   4. IANA Considerations .............................................4) s
+5 608 M
+(   5. Security Considerations .........................................4) s
+5 597 M
+(   6. References ......................................................4) s
+5 586 M
+(      6.1. Normative References .......................................4) s
+5 575 M
+(      6.2. Informative References .....................................5) s
+5 553 M
+(1.  Introduction) s
+5 531 M
+(   IPv6 [RFC8200] source nodes use routing extension headers to specify) s
+5 520 M
+(   the path that packets follow to reach their destination.  The first) s
+5 509 M
+(   routing extension header to be defined was Routing Header Type 0) s
+5 498 M
+(   \(RH0\) [RFC2460].  This header was deprecated [RFC5095] and removed) s
+5 487 M
+(   from current IPv6 implementations because it introduced security) s
+5 476 M
+(   vulnerabilities.) s
+5 454 M
+(   Two replacements to RH0 have been proposed, the Segment Routing) s
+5 443 M
+(   Header \(SRH\) [RFC8754] and the Compressed Routing Header \(CRH\)) s
+5 432 M
+(   [I-D.draft-bonica-6man-comp-rtg-hdr].  Both of these routing) s
+5 421 M
+(   extension headers provide a superset of the functionality that was) s
+5 410 M
+(   previously provided by RH0, and both address the security) s
+5 399 M
+(   vulnerabilities of RH0.) s
+5 377 M
+(   Both RH0 and the SRH specify intermediate nodes in the routing) s
+5 366 M
+(   extension header as a list of 128-bit IPv6 addresses.  The) s
+5 355 M
+(   disadvantage of this is that routing headers may become very large,) s
+5 344 M
+(   which may impose data transmission overhead and degrade router) s
+5 333 M
+(   performance \(see section 1 of [I-D.draft-bonica-6man-comp-rtg-hdr]\).) s
+5 322 M
+(   For this reason, in the CRH, intermediate nodes are specified using) s
+5 311 M
+(   16-bit or 32-bit short identifiers which are mapped to IPv6 addresses) s
+5 300 M
+(   by intermediate routers.) s
+5 278 M
+(   For a given router, it is possible that either the SRH or the CRH) s
+5 267 M
+(   would result in better performance.  Processing a packet that uses) s
+5 256 M
+(   the SRH requires the router to copy a larger header; however,) s
+5 245 M
+(   processing a packet that uses the CRH requires the router to perform) s
+5 234 M
+(   a lookup to translate the short identifier into an IPv6 address.) s
+5 212 M
+(   This document defines a procedure that can be used to compare the) s
+5 201 M
+(   performance of the CRH against other routing extension headers,) s
+5 190 M
+(   namely: the SRH, RH0, and packets without routing extension headers.) s
+5 168 M
+(2.  Requirements Language) s
+5 146 M
+(   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",) s
+5 135 M
+(   "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this) s
+5 124 M
+(   document are to be interpreted as described in [RFC2119].) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+76 24 translate
+/pagenum 3 def
+/fname () def
+/fdir (.) def
+/ftail (.) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+5 718 M
+(3.  Test Procedure) s
+5 696 M
+(   The performance characteristics of routing extension headers on a) s
+5 685 M
+(   given device under test \(DUT\) SHOULD be measured following the) s
+5 674 M
+(   guidelines in [RFC2544], except as specified in the following) s
+5 663 M
+(   sections.  The set of tests that is run SHOULD include a throughput) s
+5 652 M
+(   test, and MAY also include other tests that are specified in) s
+5 641 M
+(   [RFC2544].) s
+5 619 M
+(3.1.  DUT Setup) s
+5 597 M
+(   The DUT to be tested MUST be able to process each of the routing) s
+5 586 M
+(   extension headers whose performance will be compared.  To get the) s
+5 575 M
+(   most useful results, both the CRH and the SRH SHOULD be included.  If) s
+5 564 M
+(   possible, both 16-bit and 32-bit versions of the CRH SHOULD be) s
+5 553 M
+(   included.  RH0 and packets without a routing extension header MAY be) s
+5 542 M
+(   included as well for comparison.) s
+5 520 M
+(   The CRH has limited support in current IPv6 implementations, so the) s
+5 509 M
+(   requirement to support the CRH is likely to be the most difficult to) s
+5 498 M
+(   fulfill.  Juniper Networks has produced implementations of the CRH in) s
+5 487 M
+(   the Linux kernel and in the MX-series router \(see section 11 of) s
+5 476 M
+(   [I-D.draft-bonica-6man-comp-rtg-hdr]\).  However, these) s
+5 465 M
+(   implementations currently support only the 16-bit version of the CRH.) s
+5 443 M
+(   If the CRH is included in tests, then the router MUST have at least) s
+5 432 M
+(   one SID configured to map to the tester's IP address.  This SID MUST) s
+5 421 M
+(   be used in the CRH to cause the router to forward the packet back to) s
+5 410 M
+(   the tester \(or receiver, if separate transmitting and receiving) s
+5 399 M
+(   devices are used\).) s
+5 377 M
+(   As per [RFC2544], configuration changes MUST NOT be made to the) s
+5 366 M
+(   router between different tests.) s
+5 344 M
+(3.2.  Independent Variables) s
+5 322 M
+(   The performance characteristics of routing extension header) s
+5 311 M
+(   processing may be affected by several factors, which SHOULD be used) s
+5 300 M
+(   as independent variables in the test procedure:) s
+5 278 M
+(   o  The type of routing extension header in use \(the CRH, the SRH,) s
+5 267 M
+(      RH0, or none\).) s
+5 245 M
+(   o  For the CRH, whether 16-bit or 32-bit short identifiers are used.) s
+5 223 M
+(   o  For the CRH, the SRH, and RH0, the number of addresses \(or, for) s
+5 212 M
+(      the CRH, short identifiers\) specified in the header.  This) s
+5 201 M
+(      variable SHOULD range at least from 1 to 15, but MAY include) s
+5 190 M
+(      higher values if desired.) s
+5 168 M
+(   o  The number of data bytes included in the packets that are sent.) s
+5 157 M
+(      This variable SHOULD take on the same set of values for each) s
+5 146 M
+(      permutation of the other independent variables.  See the) s
+5 135 M
+(      discussion of frame sizes below.) s
+5 113 M
+(   Each test SHOULD be run for every possible combination of the) s
+5 102 M
+(   independent variables.) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+76 24 translate
+/pagenum 4 def
+/fname () def
+/fdir (.) def
+/ftail (.) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+5 718 M
+(3.3.  Header Contents) s
+5 696 M
+(   No extension headers should be used except for the routing extension) s
+5 685 M
+(   headers being tested.  Only one extension header at a time should be) s
+5 674 M
+(   used.) s
+5 652 M
+(   The next segment in the SRH and RH0 MUST be the IP address of the) s
+5 641 M
+(   tester \(or, when using separate transmitting and receiving devices,) s
+5 630 M
+(   the receiver\).  The next segment in the CRH MUST be an SID that the) s
+5 619 M
+(   DUT has been configured to map to the IP address of the tester \(or) s
+5 608 M
+(   receiver\).  This configuration MUST be done before starting any) s
+5 597 M
+(   tests.) s
+5 575 M
+(   Apart from the next segment for the SRH and RH0, the IP addresses) s
+5 564 M
+(   used in the CRH, the SRH, and RH0 should be selected randomly as) s
+5 553 M
+(   outlined in appendix C of [RFC2544] from the ranges reserved for this) s
+5 542 M
+(   purpose by IANA.) s
+5 520 M
+(3.4.  Frame Sizes) s
+5 498 M
+(   The performance characteristics of routing extension headers may vary) s
+5 487 M
+(   depending on frame size.  Section 9 of [RFC2544] provides guidelines) s
+5 476 M
+(   for selecting frame sizes.  However, different routing extension) s
+5 465 M
+(   headers use different amounts of space to encode the same) s
+5 454 M
+(   information.  In particular, the CRH uses less space to encode) s
+5 443 M
+(   information about intermediate nodes than the SRH and RH0.  For this) s
+5 432 M
+(   reason, a fair comparison between two routing extension headers uses) s
+5 421 M
+(   the same payload size for each rather than the same frame size for) s
+5 410 M
+(   each.) s
+5 388 M
+(   The set of payload sizes for the tests SHOULD be chosen so that the) s
+5 377 M
+(   resulting set of frame sizes for each routing extension header and) s
+5 366 M
+(   each number of addresses follows the guidelines set out in [RFC2544]) s
+5 355 M
+(   as closely as possible.) s
+5 333 M
+(4.  IANA Considerations) s
+5 311 M
+(   No IANA actions required.) s
+5 289 M
+(5.  Security Considerations) s
+5 267 M
+(   No security considerations.) s
+5 245 M
+(6.  References) s
+5 223 M
+(6.1.  Normative References) s
+5 201 M
+(   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate) s
+5 190 M
+(              Requirement Levels", BCP 14, RFC 2119,) s
+5 179 M
+(              DOI 10.17487/RFC2119, March 1997, <https://www.rfc-) s
+5 168 M
+(              editor.org/info/rfc2119>.) s
+5 146 M
+(   [RFC2460]  Deering, S. and R. Hinden, "Internet Protocol, Version 6) s
+5 135 M
+(              \(IPv6\) Specification", RFC 2460, DOI 10.17487/RFC2460,) s
+5 124 M
+(              December 1998, <https://www.rfc-editor.org/info/rfc2460>.) s
+_R
+S
+%%Page: (5) 5
+%%BeginPageSetup
+_S
+76 24 translate
+/pagenum 5 def
+/fname () def
+/fdir (.) def
+/ftail (.) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+5 718 M
+(   [RFC2544]  Bradner, S. and J. McQuaid, "Benchmarking Methodology for) s
+5 707 M
+(              Network Interconnect Devices", RFC 2544,) s
+5 696 M
+(              DOI 10.17487/RFC2544, March 1999, <https://www.rfc-) s
+5 685 M
+(              editor.org/info/rfc2544>.) s
+5 663 M
+(   [RFC5095]  Abley, J., Savola, P., and G. Neville-Neil, "Deprecation) s
+5 652 M
+(              of Type 0 Routing Headers in IPv6", RFC 5095,) s
+5 641 M
+(              DOI 10.17487/RFC5095, December 2007,) s
+5 630 M
+(              <https://www.rfc-editor.org/info/rfc5095>.) s
+5 608 M
+(   [RFC8200]  Deering, S. and R. Hinden, "Internet Protocol, Version 6) s
+5 597 M
+(              \(IPv6\) Specification", STD 86, RFC 8200,) s
+5 586 M
+(              DOI 10.17487/RFC8200, July 2017,) s
+5 575 M
+(              <https://www.rfc-editor.org/info/rfc8200>.) s
+5 553 M
+(   [RFC8754]  Filsfils, C., Ed., Dukes, D., Ed., Previdi, S.,) s
+5 542 M
+(              Leddy, J., Matsushima, S., and D. Voyer, "IPv6 Segment) s
+5 531 M
+(              Routing Header \(SRH\)", RFC 8754, DOI 10.17487/RFC8754,) s
+5 520 M
+(              March 2020, <https://www.rfc-editor.org/info/rfc8754>.) s
+5 498 M
+(6.2.  Informative References) s
+5 476 M
+(   [I-D.draft-bonica-6man-comp-rtg-hdr]) s
+5 465 M
+(              Bonica, R., Kamite, Y., Niwa, T., Alston, A., and) s
+5 454 M
+(              L. Jalil, "The IPv6 Compressed Routing Header \(CRH\)",) s
+5 443 M
+(              draft-bonica-6man-comp-rtg-hdr-14 \(work in progress\),) s
+5 432 M
+(              April 2020.) s
+5 410 M
+(Acknowledgements) s
+5 388 M
+(   The authors would like to thank Ron Bonica and Geoff Kuenning for) s
+5 377 M
+(   their comments and suggestions that improved this document.) s
+5 355 M
+(Authors' Addresses) s
+5 333 M
+(   Hakan Alpan) s
+5 322 M
+(   Harvey Mudd College) s
+5 300 M
+(   EMail: halpan@hmc.edu) s
+5 278 M
+(   Bradley Newton) s
+5 267 M
+(   Harvey Mudd College) s
+5 245 M
+(   EMail: bnewton@hmc.edu) s
+5 223 M
+(   Miles President) s
+5 212 M
+(   Harvey Mudd College) s
+5 190 M
+(   EMail: mpresident@hmc.edu) s
+5 168 M
+(   Radon Rosborough) s
+5 157 M
+(   Harvey Mudd College) s
+5 135 M
+(   EMail: rrosborough@hmc.edu) s
+_R
+S
+%%Trailer
+%%Pages: 5
+%%DocumentNeededResources: font Courier-Bold Courier 
+%%EOF

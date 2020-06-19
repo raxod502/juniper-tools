@@ -1,0 +1,280 @@
+Independent                                                  Hakan Alpan
+Internet-Draft                                            Bradley Newton
+Intended status: Informational                           Miles President
+Expires: October 29, 2020                               Radon Rosborough
+                                                     Harvey Mudd College
+                                                                May 2020
+
+      Benchmarking Methodology for IPv6 Routing Extension Headers       
+               draft-clinic-ipv6-ext-hdr-bench-method-00                
+
+Abstract
+
+   This document specifies a test procedure that should be used to
+   evaluate the performance characteristics of a network interconnection
+   device that processes IPv6 routing extension headers.  The results of
+   the test procedure can be used to compare the performance of the
+   Compressed Routing Header (CRH) with the performance of other routing
+   extension headers and with the performance of packets that do not
+   include routing extension headers.  The routing extension headers
+   that may be compared with the CRH using the test procedure are the
+   Segment Routing Header (SRH) and Routing Header Type 0 (RH0).
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.  Internet-Drafts are working
+   documents of the Internet Engineering Task Force (IETF), its areas,
+   and its working groups.  Note that other groups may also distribute
+   working documents as Internet-Drafts.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   The list of current Internet-Drafts can be accessed at
+   http://www.ietf.org/1id-abstracts.html
+
+   The list of Internet-Draft Shadow Directories can be accessed at
+   http://www.ietf.org/shadow.html
+
+Copyright Notice
+
+   Copyright (c) 2020 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (http://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+Table of Contents
+
+   1. Introduction ....................................................2
+   2. Requirements Language ...........................................2
+   3. Test Procedure ..................................................3
+      3.1. DUT Setup ..................................................3
+      3.2. Independent Variables ......................................3
+      3.3. Header Contents ............................................4
+      3.4. Frame Sizes ................................................4
+   4. IANA Considerations .............................................4
+   5. Security Considerations .........................................4
+   6. References ......................................................4
+      6.1. Normative References .......................................4
+      6.2. Informative References .....................................5
+
+1.  Introduction
+
+   IPv6 [RFC8200] source nodes use routing extension headers to specify
+   the path that packets follow to reach their destination.  The first
+   routing extension header to be defined was Routing Header Type 0
+   (RH0) [RFC2460].  This header was deprecated [RFC5095] and removed
+   from current IPv6 implementations because it introduced security
+   vulnerabilities.
+
+   Two replacements to RH0 have been proposed, the Segment Routing
+   Header (SRH) [RFC8754] and the Compressed Routing Header (CRH)
+   [I-D.draft-bonica-6man-comp-rtg-hdr].  Both of these routing
+   extension headers provide a superset of the functionality that was
+   previously provided by RH0, and both address the security
+   vulnerabilities of RH0.
+
+   Both RH0 and the SRH specify intermediate nodes in the routing
+   extension header as a list of 128-bit IPv6 addresses.  The
+   disadvantage of this is that routing headers may become very large,
+   which may impose data transmission overhead and degrade router
+   performance (see section 1 of [I-D.draft-bonica-6man-comp-rtg-hdr]).
+   For this reason, in the CRH, intermediate nodes are specified using
+   16-bit or 32-bit short identifiers which are mapped to IPv6 addresses
+   by intermediate routers.
+
+   For a given router, it is possible that either the SRH or the CRH
+   would result in better performance.  Processing a packet that uses
+   the SRH requires the router to copy a larger header; however,
+   processing a packet that uses the CRH requires the router to perform
+   a lookup to translate the short identifier into an IPv6 address.
+
+   This document defines a procedure that can be used to compare the
+   performance of the CRH against other routing extension headers,
+   namely: the SRH, RH0, and packets without routing extension headers.
+
+2.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in [RFC2119].
+
+3.  Test Procedure
+
+   The performance characteristics of routing extension headers on a
+   given device under test (DUT) SHOULD be measured following the
+   guidelines in [RFC2544], except as specified in the following
+   sections.  The set of tests that is run SHOULD include a throughput
+   test, and MAY also include other tests that are specified in
+   [RFC2544].
+
+3.1.  DUT Setup
+
+   The DUT to be tested MUST be able to process each of the routing
+   extension headers whose performance will be compared.  To get the
+   most useful results, both the CRH and the SRH SHOULD be included.  If
+   possible, both 16-bit and 32-bit versions of the CRH SHOULD be
+   included.  RH0 and packets without a routing extension header MAY be
+   included as well for comparison.
+
+   The CRH has limited support in current IPv6 implementations, so the
+   requirement to support the CRH is likely to be the most difficult to
+   fulfill.  Juniper Networks has produced implementations of the CRH in
+   the Linux kernel and in the MX-series router (see section 11 of
+   [I-D.draft-bonica-6man-comp-rtg-hdr]).  However, these
+   implementations currently support only the 16-bit version of the CRH.
+
+   If the CRH is included in tests, then the router MUST have at least
+   one SID configured to map to the tester's IP address.  This SID MUST
+   be used in the CRH to cause the router to forward the packet back to
+   the tester (or receiver, if separate transmitting and receiving
+   devices are used).
+
+   As per [RFC2544], configuration changes MUST NOT be made to the
+   router between different tests.
+
+3.2.  Independent Variables
+
+   The performance characteristics of routing extension header
+   processing may be affected by several factors, which SHOULD be used
+   as independent variables in the test procedure:
+
+   o  The type of routing extension header in use (the CRH, the SRH,
+      RH0, or none).
+
+   o  For the CRH, whether 16-bit or 32-bit short identifiers are used.
+
+   o  For the CRH, the SRH, and RH0, the number of addresses (or, for
+      the CRH, short identifiers) specified in the header.  This
+      variable SHOULD range at least from 1 to 15, but MAY include
+      higher values if desired.
+
+   o  The number of data bytes included in the packets that are sent.
+      This variable SHOULD take on the same set of values for each
+      permutation of the other independent variables.  See the
+      discussion of frame sizes below.
+
+   Each test SHOULD be run for every possible combination of the
+   independent variables.
+
+3.3.  Header Contents
+
+   No extension headers should be used except for the routing extension
+   headers being tested.  Only one extension header at a time should be
+   used.
+
+   The next segment in the SRH and RH0 MUST be the IP address of the
+   tester (or, when using separate transmitting and receiving devices,
+   the receiver).  The next segment in the CRH MUST be an SID that the
+   DUT has been configured to map to the IP address of the tester (or
+   receiver).  This configuration MUST be done before starting any
+   tests.
+
+   Apart from the next segment for the SRH and RH0, the IP addresses
+   used in the CRH, the SRH, and RH0 should be selected randomly as
+   outlined in appendix C of [RFC2544] from the ranges reserved for this
+   purpose by IANA.
+
+3.4.  Frame Sizes
+
+   The performance characteristics of routing extension headers may vary
+   depending on frame size.  Section 9 of [RFC2544] provides guidelines
+   for selecting frame sizes.  However, different routing extension
+   headers use different amounts of space to encode the same
+   information.  In particular, the CRH uses less space to encode
+   information about intermediate nodes than the SRH and RH0.  For this
+   reason, a fair comparison between two routing extension headers uses
+   the same payload size for each rather than the same frame size for
+   each.
+
+   The set of payload sizes for the tests SHOULD be chosen so that the
+   resulting set of frame sizes for each routing extension header and
+   each number of addresses follows the guidelines set out in [RFC2544]
+   as closely as possible.
+
+4.  IANA Considerations
+
+   No IANA actions required.
+
+5.  Security Considerations
+
+   No security considerations.
+
+6.  References
+
+6.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997, <https://www.rfc-
+              editor.org/info/rfc2119>.
+
+   [RFC2460]  Deering, S. and R. Hinden, "Internet Protocol, Version 6
+              (IPv6) Specification", RFC 2460, DOI 10.17487/RFC2460,
+              December 1998, <https://www.rfc-editor.org/info/rfc2460>.
+
+   [RFC2544]  Bradner, S. and J. McQuaid, "Benchmarking Methodology for
+              Network Interconnect Devices", RFC 2544,
+              DOI 10.17487/RFC2544, March 1999, <https://www.rfc-
+              editor.org/info/rfc2544>.
+
+   [RFC5095]  Abley, J., Savola, P., and G. Neville-Neil, "Deprecation
+              of Type 0 Routing Headers in IPv6", RFC 5095,
+              DOI 10.17487/RFC5095, December 2007,
+              <https://www.rfc-editor.org/info/rfc5095>.
+
+   [RFC8200]  Deering, S. and R. Hinden, "Internet Protocol, Version 6
+              (IPv6) Specification", STD 86, RFC 8200,
+              DOI 10.17487/RFC8200, July 2017,
+              <https://www.rfc-editor.org/info/rfc8200>.
+
+   [RFC8754]  Filsfils, C., Ed., Dukes, D., Ed., Previdi, S.,
+              Leddy, J., Matsushima, S., and D. Voyer, "IPv6 Segment
+              Routing Header (SRH)", RFC 8754, DOI 10.17487/RFC8754,
+              March 2020, <https://www.rfc-editor.org/info/rfc8754>.
+
+6.2.  Informative References
+
+   [I-D.draft-bonica-6man-comp-rtg-hdr]
+              Bonica, R., Kamite, Y., Niwa, T., Alston, A., and
+              L. Jalil, "The IPv6 Compressed Routing Header (CRH)",
+              draft-bonica-6man-comp-rtg-hdr-14 (work in progress),
+              April 2020.
+
+Acknowledgements
+
+   The authors would like to thank Ron Bonica and Geoff Kuenning for
+   their comments and suggestions that improved this document.
+
+Authors' Addresses
+
+   Hakan Alpan
+   Harvey Mudd College
+
+   EMail: halpan@hmc.edu
+
+   Bradley Newton
+   Harvey Mudd College
+
+   EMail: bnewton@hmc.edu
+
+   Miles President
+   Harvey Mudd College
+
+   EMail: mpresident@hmc.edu
+
+   Radon Rosborough
+   Harvey Mudd College
+
+   EMail: rrosborough@hmc.edu

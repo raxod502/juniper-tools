@@ -10,5 +10,7 @@ __pycache__
 draft/*
 
 !throughput_visual/test.json
-!draft/.gitkeep
 !draft/draft-clinic-ipv6-ext-hdr-bench-method-00
+!draft/final.pdf
+!draft/final.ps
+!draft/final.txt
