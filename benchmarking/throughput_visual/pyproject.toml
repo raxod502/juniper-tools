@@ -7,7 +7,7 @@ authors = ["Juniper Networks Clinic <juniper19@cs.hmc.edu>"]
 [tool.poetry.dependencies]
 python = ">=3.5"
 pygal = "^2.4.0"
-cairosvg = "^2.4.2"
+cairosvg = "^2.7.0"
 
 [tool.poetry.dev-dependencies]
 
