@@ -5,7 +5,7 @@ description = "Visualizations of results from the benchmarking project"
 authors = ["Juniper Networks Clinic <juniper19@cs.hmc.edu>"]
 
 [tool.poetry.dependencies]
-python = ">=3.5"
+python = "^3.10"
 pygal = "^2.4.0"
 cairosvg = "^2.7.0"
 
